@@ -8,7 +8,7 @@
 
 ## Table of Contents
 
-- [Unser Projekt](#unserprojekt)
+- [Unser Projekt](#unser-projekt)
 
 
 # Unser Projekt
