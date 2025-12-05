@@ -1,0 +1,16 @@
+plugins {
+    id "com.github.node-gradle.node" version "5.0.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+node {
+    download = true
+    version = "22.5.1"
+}
+
+tasks.register('npmBuild', NpmTask) {
+    args = [ 'run', 'build' ]
+}
