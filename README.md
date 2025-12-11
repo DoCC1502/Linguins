@@ -40,6 +40,7 @@ Bei Fragen oder Anregungen können Sie uns unter
 - Berkay Semi Genc: bgenc@student.tgm.ac.at
 - Dario Cikojevic: dcikojevic@student.tgm.ac.at
 erreichen.
+
 Viel Spaß beim Lernen mit Linguins!
 
 # Vielen Dank fürs Lesen!
