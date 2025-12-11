@@ -39,7 +39,7 @@ Bei Fragen oder Anregungen können Sie uns unter
 - Elyesa Imamoglu: eimamoglu@student.tgm.ac.at
 - Berkay Semi Genc: bgenc@student.tgm.ac.at
 - Dario Cikojevic: dcikojevic@student.tgm.ac.at
-- erreichen.
+erreichen.
 - Viel Spaß beim Lernen mit Linguins!
 
 # Vielen Dank fürs Lesen!
