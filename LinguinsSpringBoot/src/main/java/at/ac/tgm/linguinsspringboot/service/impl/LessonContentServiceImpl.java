@@ -7,10 +7,12 @@ import at.ac.tgm.linguinsspringboot.repository.LessonContentRepository;
 import at.ac.tgm.linguinsspringboot.repository.LessonRepository;
 import at.ac.tgm.linguinsspringboot.service.LessonContentService;
 import at.ac.tgm.linguinsspringboot.entity.LessonContentEntity;
+import org.springframework.stereotype.Service;
 
 
 import java.util.Optional;
 
+@Service
 public class LessonContentServiceImpl implements LessonContentService {
 
     private final LessonRepository lessonRepo;
@@ -37,9 +39,9 @@ public class LessonContentServiceImpl implements LessonContentService {
                 .map(entity -> {
                     entity.setContent(dto.getContent());
 
-                    if(dto.getLessonId() != null) {
+                    if (dto.getLessonId() != null) {
                         LessonEntity lessonEntity = lessonRepo.findById(dto.getLessonId())
-                                .orElseThrow(() -> new RuntimeException("Lesson not found with id: "+dto.getLessonId()));
+                                .orElseThrow(() -> new RuntimeException("Lesson not found with id: " + dto.getLessonId()));
                         entity.setLesson(lessonEntity);
                     }
 
@@ -52,7 +54,7 @@ public class LessonContentServiceImpl implements LessonContentService {
                     return result;
 
                 })
-                .orElseThrow(() -> new RuntimeException("LessonContent not found with id: "+dto.getId()));
+                .orElseThrow(() -> new RuntimeException("LessonContent not found with id: " + dto.getId()));
     }
 
     @Override
