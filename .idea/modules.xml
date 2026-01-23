@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Linguins.iml" filepath="$PROJECT_DIR$/.idea/Linguins.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LinguinsSpringBoot.main.iml" filepath="$PROJECT_DIR$/.idea/modules/LinguinsSpringBoot.main.iml" />
     </modules>
   </component>
 </project>
