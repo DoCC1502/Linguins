@@ -12,5 +12,5 @@ public class LessonDto {
     private Long id;
     private String title;
     private String description;
-    private String difficulty;
+    private int difficulty;
 }

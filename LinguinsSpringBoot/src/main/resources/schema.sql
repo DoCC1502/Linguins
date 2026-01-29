@@ -13,6 +13,17 @@ CREATE TABLE User
     PRIMARY KEY (id)
 );
 
+CREATE TABLE "user"  -- user ist reserviertes Wort, daher Anführungszeichen
+(
+    id         BIGSERIAL PRIMARY KEY,
+    username   VARCHAR(255) NOT NULL,
+    email      VARCHAR(255) NOT NULL UNIQUE,
+    password   VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL,
+    role       VARCHAR(50)
+);
+
 
 -- ===========================
 -- LESSON
@@ -31,9 +42,9 @@ CREATE TABLE Lesson
 -- ===========================
 -- LESSON CONTENT
 -- ===========================
-CREATE TABLE LessonContent
+CREATE TABLE lesson_content
 (
-    id        BIGINT NOT NULL AUTO_INCREMENT,
+    id        BIGSERIAL PRIMARY KEY,
     lesson_id BIGINT NOT NULL,
     content   TEXT   NOT NULL,
     PRIMARY KEY (id),

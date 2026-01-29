@@ -10,12 +10,12 @@ import lombok.Data;
  */
 @Entity
 @Data
-@Table(name = "lessons")
+@Table(name = "Lesson")
 public class LessonEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
     private String description;
-    private String difficulty;
+    private int difficulty;
 }
