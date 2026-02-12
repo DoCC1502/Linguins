@@ -70,7 +70,7 @@ public class LessonServiceImpl implements LessonService {
 
     @Transactional
     @Override
-    public List<LessonDto> getByDifficulty(String difficulty) {
+    public List<LessonDto> getByDifficulty(int difficulty) {
         return repo.findByDifficulty(difficulty).stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());
