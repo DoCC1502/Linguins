@@ -1,0 +1,116 @@
+:root {
+    --bg-main: #0f172a;
+    --bg-card: #111827;
+    --bg-soft: #1f2933;
+
+    --primary: #42b883;
+    --primary-hover: #36a374;
+
+    --text-main: #f9fafb;
+    --text-muted: #9ca3af;
+    --border-soft: #374151;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+    background: var(--bg-main);
+    color: var(--text-main);
+}
+
+.page {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+h1 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background: var(--bg-soft);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    color: var(--text-main);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-muted);
+}
+
+button {
+    width: 100%;
+    padding: 0.8rem;
+    background: var(--primary);
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+button:hover {
+    background: var(--primary-hover);
+}
+
+/* Home Page */
+.hero {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.modules {
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.modules-grid {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.module-card {
+    background: var(--bg-soft);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.footer {
+    padding: 3rem;
+    text-align: center;
+}
+
+.socials {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+
