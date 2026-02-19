@@ -64,8 +64,7 @@ public class LessonContentServiceImpl implements LessonContentService {
 
     @Override
     public Optional<LessonContentDto> getByLessonId(Long lessonId) {
-        return repo.findById(lessonId).map(mapper::toDto);
-    }
+        return repo.findByLessonId(lessonId).map(mapper::toDto);    }
 
     @Override
     public void delete(Long id) {
