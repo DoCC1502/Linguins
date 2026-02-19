@@ -44,7 +44,7 @@ public interface LessonService {
      * @param difficulty Schwierigkeit als String
      * @return Liste der LessonDto
      */
-    List<LessonDto> getByDifficulty(String difficulty);
+    List<LessonDto> getByDifficulty(int difficulty);
 
     /**
      * Löscht eine Lesson anhand der ID.

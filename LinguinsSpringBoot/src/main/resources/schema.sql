@@ -1,19 +1,7 @@
 -- ===========================
 -- USER
 -- ===========================
-CREATE TABLE User
-(
-    id         BIGINT       NOT NULL AUTO_INCREMENT,
-    username   VARCHAR(255) NOT NULL,
-    email      VARCHAR(255) NOT NULL UNIQUE,
-    password   VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP NULL,
-    role       VARCHAR(50),
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE "user"  -- user ist reserviertes Wort, daher Anführungszeichen
+CREATE TABLE IF NOT EXISTS users  -- user ist reserviertes Wort, daher Anführungszeichen
 (
     id         BIGSERIAL PRIMARY KEY,
     username   VARCHAR(255) NOT NULL,
@@ -22,6 +10,8 @@ CREATE TABLE "user"  -- user ist reserviertes Wort, daher Anführungszeichen
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL,
     role       VARCHAR(50)
+--    PRIMARY KEY (id)
+
 );
 
 
@@ -29,27 +19,26 @@ CREATE TABLE "user"  -- user ist reserviertes Wort, daher Anführungszeichen
 -- LESSON
 -- (m:n zu User; 1:1 zu LessonContent)
 -- ===========================
-CREATE TABLE Lesson
+CREATE TABLE IF NOT EXISTS lesson
 (
-    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    id          BIGSERIAL PRIMARY KEY,
     title       VARCHAR(255) NOT NULL,
     description TEXT,
-    difficulty  INT,
-    PRIMARY KEY (id)
+    difficulty  INT
+--PRIMARY KEY (id)
 );
 
 
 -- ===========================
 -- LESSON CONTENT
 -- ===========================
-CREATE TABLE lesson_content
+CREATE TABLE IF NOT EXISTS lesson_content
 (
     id        BIGSERIAL PRIMARY KEY,
     lesson_id BIGINT NOT NULL,
-    content   TEXT   NOT NULL,
-    PRIMARY KEY (id),
+    content   TEXT NOT NULL,
     CONSTRAINT fk_lc_lesson
-        FOREIGN KEY (lesson_id) REFERENCES Lesson (id)
+        FOREIGN KEY (lesson_id) REFERENCES lesson (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
 );
@@ -59,17 +48,17 @@ CREATE TABLE lesson_content
 -- USER <-> LESSON  (m:n: „bearbeitet“)
 -- Junction Table
 -- ===========================
-CREATE TABLE UserLesson
+CREATE TABLE IF NOT EXISTS user_lesson
 (
     user_id   BIGINT NOT NULL,
     lesson_id BIGINT NOT NULL,
     PRIMARY KEY (user_id, lesson_id),
     CONSTRAINT fk_ul_user
-        FOREIGN KEY (user_id) REFERENCES User (id)
+        FOREIGN KEY (user_id) REFERENCES users (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE,
     CONSTRAINT fk_ul_lesson
-        FOREIGN KEY (lesson_id) REFERENCES Lesson (id)
+        FOREIGN KEY (lesson_id) REFERENCES lesson (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
 );
@@ -79,20 +68,19 @@ CREATE TABLE UserLesson
 -- USER PROGRESS
 -- (User 1:n UserProgress, Lesson 1:n UserProgress)
 -- ===========================
-CREATE TABLE UserProgress
+CREATE TABLE IF NOT EXISTS user_progress
 (
-    id         BIGINT      NOT NULL AUTO_INCREMENT,
-    user_id    BIGINT      NOT NULL,
-    lesson_id  BIGINT      NOT NULL,
-    percentage INT         NOT NULL,
+    id         BIGSERIAL PRIMARY KEY,
+    user_id    BIGINT NOT NULL,
+    lesson_id  BIGINT NOT NULL,
+    percentage INT NOT NULL,
     status     VARCHAR(50) NOT NULL,
-    PRIMARY KEY (id),
     CONSTRAINT fk_up_user
-        FOREIGN KEY (user_id) REFERENCES User (id)
+        FOREIGN KEY (user_id) REFERENCES users (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE,
     CONSTRAINT fk_up_lesson
-        FOREIGN KEY (lesson_id) REFERENCES Lesson (id)
+        FOREIGN KEY (lesson_id) REFERENCES lesson (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
 );
@@ -102,21 +90,20 @@ CREATE TABLE UserProgress
 -- USER LESSON RESULT
 -- (n:1 zu User, n:1 zu Lesson)
 -- ===========================
-CREATE TABLE UserLessonResult
+CREATE TABLE IF NOT EXISTS user_lesson_result
 (
-    id           BIGINT NOT NULL AUTO_INCREMENT,
+    id           BIGSERIAL PRIMARY KEY,
     user_id      BIGINT NOT NULL,
     lesson_id    BIGINT NOT NULL,
     score        INT,
     passed       BOOLEAN,
     completed_at TIMESTAMP NULL,
-    PRIMARY KEY (id),
     CONSTRAINT fk_ulr_user
-        FOREIGN KEY (user_id) REFERENCES User (id)
+        FOREIGN KEY (user_id) REFERENCES users (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE,
     CONSTRAINT fk_ulr_lesson
-        FOREIGN KEY (lesson_id) REFERENCES Lesson (id)
+        FOREIGN KEY (lesson_id) REFERENCES lesson (id)
             ON DELETE CASCADE
             ON UPDATE CASCADE
 );

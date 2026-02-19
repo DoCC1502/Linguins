@@ -1,22 +1,25 @@
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.1'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
 group = 'at.ac.tgm'
 version = '0.0.1-SNAPSHOT'
-description = 'LinguinsSpringBoot'
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+    sourceCompatibility = '17'
 }
 
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
+    }
+    // Dieser Block löscht die alten Javax-Libraries aus dem gesamten Classpath
+    // Das löst den "NoClassDefFoundError: javax/xml/bind/annotation/XmlElement"
+    all {
+        exclude group: 'javax.xml.bind', module: 'jaxb-api'
+        exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-jaxb-annotations'
     }
 }
 
@@ -25,24 +28,44 @@ repositories {
 }
 
 dependencies {
-    //implementation 'org.springframework.boot:spring-boot-starter'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // --- SPRING BOOT CORE & WEB ---
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.postgresql:postgresql'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-docker-compose'
 
-    // MapStruct - nur eine Version
+    // --- JAXB / XML FIX (Wichtig für Spring Boot 3 & Hibernate 6) ---
+    // Wir nutzen hier konsequent jakarta statt javax
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+    runtimeOnly 'com.sun.xml.bind:jaxb-impl:4.0.3'
+    // Das hier ist der spezifische Jackson-Fix für Jakarta:
+    implementation 'com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations'
+
+    // --- DOCKER SUPPORT ---
+    implementation 'com.github.docker-java:docker-java:3.3.4'
+    implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.3.4'
+
+    // --- APACHE HTTP CLIENT FIX (Löst den HttpVersionPolicy-Fehler) ---
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+    implementation 'org.apache.httpcomponents.core5:httpcore5:5.2.4'
+
+    // --- LOMBOK & MAPSTRUCT ---
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 
-    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+    // --- DATABASE ---
+    runtimeOnly 'org.postgresql:postgresql'
+    // Hinweis: jakarta.persistence-api wird automatisch durch data-jpa mitgeliefert
 
-    // Jackson
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    // --- JSON & UTILS ---
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.mockito:mockito-core:5.8.0'
 
+    // --- TESTING ---
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {

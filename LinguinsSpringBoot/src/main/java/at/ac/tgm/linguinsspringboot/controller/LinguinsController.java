@@ -56,7 +56,7 @@ public class LinguinsController {
     }
 
     @GetMapping("/lessons/difficulty/{difficulty}")
-    public ResponseEntity<List<LessonDto>> getLessonsByDifficulty(@PathVariable String difficulty) {
+    public ResponseEntity<List<LessonDto>> getLessonsByDifficulty(@PathVariable int difficulty) {
         return ResponseEntity.ok(lessonService.getByDifficulty(difficulty));
     }
 
