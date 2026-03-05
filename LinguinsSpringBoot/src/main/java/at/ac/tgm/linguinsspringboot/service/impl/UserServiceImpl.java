@@ -8,6 +8,7 @@ import at.ac.tgm.linguinsspringboot.service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,7 +41,9 @@ public class UserServiceImpl implements UserService {
             dto.setRole("USER");
         }
 
+
         UserEntity entity = mapper.toEntity(dto);
+        entity.setPassword(new BCryptPasswordEncoder().encode(dto.getPassword()));
         UserEntity saved = userRepository.save(entity);
         return mapper.toDto(saved);
     }

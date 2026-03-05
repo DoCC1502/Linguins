@@ -33,6 +33,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-docker-compose'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // --- JAXB / XML FIX (Wichtig für Spring Boot 3 & Hibernate 6) ---
     // Wir nutzen hier konsequent jakarta statt javax
@@ -67,6 +68,17 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
+
+tasks.register('copyFrontend', Copy) {
+    // Pfad zu deinem Vue 'dist' Ordner (relativ zur build.gradle)
+    from file('../frontend/dist')
+
+    // Zielordner in Spring Boot
+    into file('src/main/resources/static')
+}
+
+processResources.dependsOn copyFrontend
 
 tasks.named('test') {
     useJUnitPlatform()
