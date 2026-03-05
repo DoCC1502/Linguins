@@ -3,7 +3,9 @@ package at.ac.tgm.linguinsspringboot.service.impl;
 import at.ac.tgm.linguinsspringboot.converter.LinguinsMapper;
 import at.ac.tgm.linguinsspringboot.dto.UserProgressDto;
 import at.ac.tgm.linguinsspringboot.entity.UserProgressEntity;
+import at.ac.tgm.linguinsspringboot.repository.LessonRepository;
 import at.ac.tgm.linguinsspringboot.repository.UserProgressRepository;
+import at.ac.tgm.linguinsspringboot.repository.UserRepository;
 import at.ac.tgm.linguinsspringboot.service.UserProgressService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,12 @@ public class UserProgressServiceImpl implements UserProgressService {
 
     @Autowired
     private LinguinsMapper mapper;
+
+    @Autowired
+    private UserRepository userRepository; // NEU hinzufügen
+
+    @Autowired
+    private LessonRepository lessonRepository; // NEU hinzufügen
 
     @Transactional
     @Override

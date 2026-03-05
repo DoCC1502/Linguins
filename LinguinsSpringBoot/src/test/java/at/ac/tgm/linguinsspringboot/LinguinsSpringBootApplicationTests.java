@@ -62,7 +62,7 @@ class LinguinsSpringBootApplicationTests {
         testLesson.setId(1L);
         testLesson.setTitle("German Basics");
         testLesson.setDescription("Learn basic German");
-        testLesson.setDifficulty("beginner");
+        testLesson.setDifficulty(1);
 
         // Test User
         testUser = new UserDto();
@@ -88,13 +88,13 @@ class LinguinsSpringBootApplicationTests {
         LessonDto newLesson = new LessonDto();
         newLesson.setTitle("French Basics");
         newLesson.setDescription("Learn basic French");
-        newLesson.setDifficulty("beginner");
+        newLesson.setDifficulty(1);
 
         LessonDto savedLesson = new LessonDto();
         savedLesson.setId(2L);
         savedLesson.setTitle("French Basics");
         savedLesson.setDescription("Learn basic French");
-        savedLesson.setDifficulty("beginner");
+        savedLesson.setDifficulty(1);
 
         when(lessonService.create(any(LessonDto.class))).thenReturn(savedLesson);
 
@@ -104,7 +104,7 @@ class LinguinsSpringBootApplicationTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(2))
                 .andExpect(jsonPath("$.title").value("French Basics"))
-                .andExpect(jsonPath("$.difficulty").value("beginner"));
+                .andExpect(jsonPath("$.difficulty").value("1"));
 
         verify(lessonService, times(1)).create(any(LessonDto.class));
     }
@@ -117,7 +117,7 @@ class LinguinsSpringBootApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("German Basics"))
-                .andExpect(jsonPath("$.difficulty").value("beginner"));
+                .andExpect(jsonPath("$.difficulty").value("1"));
 
         verify(lessonService, times(1)).getById(1L);
     }
@@ -140,7 +140,7 @@ class LinguinsSpringBootApplicationTests {
         lesson2.setId(2L);
         lesson2.setTitle("Spanish Basics");
         lesson2.setDescription("Learn basic Spanish");
-        lesson2.setDifficulty("intermediate");
+        lesson2.setDifficulty(2);
 
         List<LessonDto> lessons = Arrays.asList(testLesson, lesson2);
         when(lessonService.getAll()).thenReturn(lessons);
@@ -157,14 +157,14 @@ class LinguinsSpringBootApplicationTests {
     @Test
     void getLessonsByDifficulty_shouldReturnFilteredList() throws Exception {
         List<LessonDto> beginnerLessons = Arrays.asList(testLesson);
-        when(lessonService.getByDifficulty("beginner")).thenReturn(beginnerLessons);
+        when(lessonService.getByDifficulty(1)).thenReturn(beginnerLessons);
 
-        mockMvc.perform(get("/api/lessons/difficulty/beginner"))
+        mockMvc.perform(get("/api/lessons/difficulty/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].difficulty").value("beginner"));
+                .andExpect(jsonPath("$[0].difficulty").value("1"));
 
-        verify(lessonService, times(1)).getByDifficulty("beginner");
+        verify(lessonService, times(1)).getByDifficulty(1);
     }
 
     @Test
@@ -173,7 +173,7 @@ class LinguinsSpringBootApplicationTests {
         updatedLesson.setId(1L);
         updatedLesson.setTitle("German Advanced");
         updatedLesson.setDescription("Advanced German");
-        updatedLesson.setDifficulty("advanced");
+        updatedLesson.setDifficulty(3);
 
         when(lessonService.update(any(LessonDto.class))).thenReturn(updatedLesson);
 
@@ -182,7 +182,7 @@ class LinguinsSpringBootApplicationTests {
                         .content(objectMapper.writeValueAsString(updatedLesson)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("German Advanced"))
-                .andExpect(jsonPath("$.difficulty").value("advanced"));
+                .andExpect(jsonPath("$.difficulty").value("3"));
 
         verify(lessonService, times(1)).update(any(LessonDto.class));
     }
