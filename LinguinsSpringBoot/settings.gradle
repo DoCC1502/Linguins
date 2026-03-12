@@ -1,1 +1,3 @@
 rootProject.name = 'LinguinsSpringBoot'
+include 'frontend'
+project(':frontend').projectDir = new File(settingsDir, '../frontend')
