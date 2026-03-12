@@ -4,7 +4,7 @@
  * Ramis Ekici | Projectmanager
  * Elyesa Imamoglu | Stellvertretender Projectmanager
  * Berkay Semi Genc
- * Dario Cikojevic
+ * Dario Cikojevic | Stellvertretender Stellvertretender Projectmanager
 
 # Unser Projekt
 
