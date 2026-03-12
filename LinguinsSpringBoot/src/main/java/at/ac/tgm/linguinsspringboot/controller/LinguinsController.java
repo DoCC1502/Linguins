@@ -5,14 +5,19 @@ import at.ac.tgm.linguinsspringboot.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api")
 @RestController
 public class LinguinsController {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private LessonService lessonService;
@@ -28,6 +33,8 @@ public class LinguinsController {
 
     @Autowired
     private UserLessonResultService userLessonResultService;
+
+
 
     /*
      * LESSON ENDPOINTS
@@ -102,6 +109,30 @@ public class LinguinsController {
     /*
      * USER ENDPOINTS
      */
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody java.util.Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+
+        try {
+            // 1. User aus der Datenbank holen
+            UserDto user = userService.getByEmail(email)
+                    .orElseThrow(() -> new NoSuchElementException("User nicht gefunden"));
+
+            // 2. Passwort prüfen
+            // WICHTIG: Wenn du Passwörter verschlüsselt hast, nutze passwordEncoder.matches()
+            if (passwordEncoder.matches(password, user.getPassword())) {
+                // Login erfolgreich - wir geben das User-Objekt zurück
+                return ResponseEntity.ok(user);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Falsches Passwort");
+            }
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User nicht gefunden");
+        }
+    }
+
 
     @PostMapping("/users")
     public ResponseEntity<UserDto> createUser(@RequestBody UserDto dto) {
