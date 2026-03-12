@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {ref} from 'vue';
 import {userService} from '../services/userService'; // Pfad zu deiner .ts Datei prüfen
-import type {UserDto} from '../types/types.ts'; // Pfad zu deinen Typen prüfen
+import type {UserDto } from '../types/types.ts'; // Pfad zu deinen Typen prüfen
 
 // 1. Datenmodell initialisieren
 const form = ref<UserDto>({
