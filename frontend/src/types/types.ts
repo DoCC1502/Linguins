@@ -34,3 +34,22 @@ export interface UserProgressDto {
     percentage: number;
 }
 
+/**
+ * Interface für statischen Lektionsinhalt (Frontend-seitig)
+ * Alle Dateien in src/pages/lessons müssen diesen Typ verwenden
+ */
+export interface Task {
+    q: string;      // question
+    c: string;      // correct answer
+    a: string;      // user answer
+    r: boolean | null;  // result (null = not checked, true = correct, false = wrong)
+}
+
+export interface LessonContent {
+    id: number;                     // Mapped from backend LessonDto.id
+    title: string;
+    description: string;
+    difficulty: number;
+    tasks: Task[];
+}
+

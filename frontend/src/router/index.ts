@@ -25,6 +25,10 @@ import ShellScripting from '../pages/lessons/ShellScripting.vue'
 import TerminalPage from '../pages/TerminalPage.vue'
 import CollaborationPage from '../pages/CollaborationPage.vue'
 
+// Unified Lesson View
+import LessonView from '../pages/LessonView.vue'
+import GratisPage from "@/pages/GratisPage.vue";
+
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -35,14 +39,18 @@ const router = createRouter({
         { path: '/lessons', component: LessonsPage },
         { path: '/about', component: AboutPage },
         { path: '/contact', component: ContactPage },
+        {path: '/free', component: GratisPage},
 
-        // Lesson Detail Routes
+        // Legacy Lesson Routes (slug-based) - können bei Bedarf weiterhin genutzt werden
         { path: '/lessons/linux-fundamentals', component: LinuxFundamentals },
         { path: '/lessons/essential-commands', component: EssentialCommands },
         { path: '/lessons/file-permissions', component: FilePermissions },
         { path: '/lessons/process-management', component: ProcessManagement },
         { path: '/lessons/network-commands', component: NetworkCommands },
         { path: '/lessons/shell-scripting', component: ShellScripting },
+
+        // NEW: Unified Lesson View (ID-based) mit Progress Sync
+        { path: '/lessons/:id', component: LessonView, props: true },
 
         // Tools
         { path: '/terminal', component: TerminalPage },

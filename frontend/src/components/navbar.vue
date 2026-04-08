@@ -10,7 +10,8 @@
     <ul>
       <li><RouterLink to="/">Dashboard</RouterLink></li>
       <li><RouterLink to="/lessons">Lessons</RouterLink></li>
-      <li><RouterLink to="/terminal">Terminal</RouterLink></li>
+      <li><RouterLink to="/terminal">Pro</RouterLink></li>
+      <li><RouterLink to="/free">Free</RouterLink></li>
       <li><RouterLink to="/collaboration">Collaboration</RouterLink></li>
       <li><RouterLink to="/about">About</RouterLink></li>
       <li><RouterLink to="/contact">Contact</RouterLink></li>
