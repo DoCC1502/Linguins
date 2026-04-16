@@ -1,12 +1,15 @@
-<script setup>
-const tasks = [
-  { q:'Ping host', c:'ping', a:'', r:null },
-  { q:'Download file', c:'wget', a:'', r:null },
-  { q:'HTTP requests', c:'curl', a:'', r:null },
-  { q:'Remote login', c:'ssh', a:'', r:null },
-  { q:'Network config', c:'ifconfig', a:'', r:null }
-]
-const check = t => t.r = t.a === t.c
+<script setup lang="ts">
+import type { Task } from '@/types/types';
+
+const tasks: Task[] = [
+  { q: 'Ping host', c: 'ping', a: '', r: null },
+  { q: 'Download file', c: 'wget', a: '', r: null },
+  { q: 'HTTP requests', c: 'curl', a: '', r: null },
+  { q: 'Remote login', c: 'ssh', a: '', r: null },
+  { q: 'Network config', c: 'ifconfig', a: '', r: null }
+];
+
+const check = (t: Task): boolean => t.r = t.a.trim().toLowerCase() === t.c.toLowerCase();
 </script>
 
 <template>

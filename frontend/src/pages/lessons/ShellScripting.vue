@@ -1,12 +1,15 @@
-<script setup>
-const tasks = [
-  { q:'Script shebang', c:'#!/bin/bash', a:'', r:null },
-  { q:'Variable assign', c:'=', a:'', r:null },
-  { q:'If statement', c:'if', a:'', r:null },
-  { q:'For loop', c:'for', a:'', r:null },
-  { q:'Echo output', c:'echo', a:'', r:null }
-]
-const check = t => t.r = t.a === t.c
+<script setup lang="ts">
+import type { Task } from '@/types/types';
+
+const tasks: Task[] = [
+  { q: 'Script shebang', c: '#!/bin/bash', a: '', r: null },
+  { q: 'Variable assign', c: '=', a: '', r: null },
+  { q: 'If statement', c: 'if', a: '', r: null },
+  { q: 'For loop', c: 'for', a: '', r: null },
+  { q: 'Echo output', c: 'echo', a: '', r: null }
+];
+
+const check = (t: Task): boolean => t.r = t.a.trim().toLowerCase() === t.c.toLowerCase();
 </script>
 
 <template>

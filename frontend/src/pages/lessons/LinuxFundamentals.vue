@@ -17,16 +17,18 @@
   </section>
 </template>
 
-<script setup>
-const tasks = [
-  { q:'List files', c:'ls', a:'', r:null },
-  { q:'Show current dir', c:'pwd', a:'', r:null },
-  { q:'Change directory', c:'cd', a:'', r:null },
-  { q:'Clear terminal', c:'clear', a:'', r:null },
-  { q:'Root directory symbol', c:'/', a:'', r:null }
-]
+<script setup lang="ts">
+import type { Task } from '@/types/types';
 
-const check = t => t.r = t.a.trim().toLowerCase() === t.c
+const tasks: Task[] = [
+  { q: 'List files', c: 'ls', a: '', r: null },
+  { q: 'Show current dir', c: 'pwd', a: '', r: null },
+  { q: 'Change directory', c: 'cd', a: '', r: null },
+  { q: 'Clear terminal', c: 'clear', a: '', r: null },
+  { q: 'Root directory symbol', c: '/', a: '', r: null }
+];
+
+const check = (t: Task): boolean => t.r = t.a.trim().toLowerCase() === t.c.toLowerCase();
 </script>
 
 <style scoped>

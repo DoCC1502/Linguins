@@ -1,12 +1,15 @@
-<script setup>
-const tasks = [
-  { q:'Change permissions', c:'chmod', a:'', r:null },
-  { q:'Change owner', c:'chown', a:'', r:null },
-  { q:'Read permission number', c:'4', a:'', r:null },
-  { q:'Write permission number', c:'2', a:'', r:null },
-  { q:'Execute permission number', c:'1', a:'', r:null }
-]
-const check = t => t.r = t.a === t.c
+<script setup lang="ts">
+import type { Task } from '@/types/types';
+
+const tasks: Task[] = [
+  { q: 'Change permissions', c: 'chmod', a: '', r: null },
+  { q: 'Change owner', c: 'chown', a: '', r: null },
+  { q: 'Read permission number', c: '4', a: '', r: null },
+  { q: 'Write permission number', c: '2', a: '', r: null },
+  { q: 'Execute permission number', c: '1', a: '', r: null }
+];
+
+const check = (t: Task): boolean => t.r = t.a.trim().toLowerCase() === t.c.toLowerCase();
 </script>
 
 <template>

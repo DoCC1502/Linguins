@@ -29,6 +29,9 @@ const handleLogin = async () => {
       // Optional: User-Daten im Browser merken
       localStorage.setItem('user', JSON.stringify(user));
 
+      // Notify navbar and other components about the login
+      window.dispatchEvent(new Event('user-updated'));
+
       // REDIRECT zur Hauptseite (meistens "/" oder "/home")
       router.push('/');
     } else {

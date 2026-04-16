@@ -57,6 +57,12 @@ async function selectTemplate(routePath: string) {
   showDropdown.value = false;
   router.push(`/lessons/${routePath}`);
 }
+
+// Navigation zur Lektion (mit ID für Progress Sync)
+function navigateToLesson(lessonId: number | undefined) {
+  if (lessonId === undefined) return;
+  router.push(`/lessons/${lessonId}`);
+}
 </script>
 
 <template>
@@ -103,7 +109,7 @@ async function selectTemplate(routePath: string) {
             v-for="lesson in lessons"
             :key="lesson.id"
             class="modern-card"
-            @click="router.push(`/lessons/${lesson.id}`)"
+            @click="navigateToLesson(lesson.id)"
         >
           <div class="card-inner">
             <div class="card-badge">Level {{ lesson.difficulty }}</div>
