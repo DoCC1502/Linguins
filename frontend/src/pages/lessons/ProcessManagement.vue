@@ -1,12 +1,15 @@
-<script setup>
-const tasks = [
-  { q:'List processes', c:'ps', a:'', r:null },
-  { q:'Live process view', c:'top', a:'', r:null },
-  { q:'Kill process', c:'kill', a:'', r:null },
-  { q:'Background process', c:'&', a:'', r:null },
-  { q:'Foreground process', c:'fg', a:'', r:null }
-]
-const check = t => t.r = t.a === t.c
+<script setup lang="ts">
+import type { Task } from '@/types/types';
+
+const tasks: Task[] = [
+  { q: 'List processes', c: 'ps', a: '', r: null },
+  { q: 'Live process view', c: 'top', a: '', r: null },
+  { q: 'Kill process', c: 'kill', a: '', r: null },
+  { q: 'Background process', c: '&', a: '', r: null },
+  { q: 'Foreground process', c: 'fg', a: '', r: null }
+];
+
+const check = (t: Task): boolean => t.r = t.a.trim().toLowerCase() === t.c.toLowerCase();
 </script>
 
 <template>

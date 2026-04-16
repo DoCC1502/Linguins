@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<meta http-equiv="X-Frame-Options" content="allow-from http://localhost:8080">
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Simulator</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0c0c0c;
+            --bg-terminal: #1a1a1a;
+            --bg-panel: #141414;
+            --text-primary: #e8e8e8;
+            --text-muted: #6b6b6b;
+            --accent-green: #4ade80;
+            --accent-blue: #60a5fa;
+            --accent-red: #ef4444;
+            --accent-yellow: #fbbf24;
+            --accent-purple: #a78bfa;
+            --border-color: #2a2a2a;
+            --shadow-glow: 0 0 60px rgba(74, 222, 128, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            background-image:
+                radial-gradient(ellipse at 20% 30%, rgba(74, 222, 128, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(96, 165, 250, 0.03) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 40px 20px;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Terminal Window */
+        .terminal-window {
+            background: var(--bg-terminal);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow:
+                0 25px 80px rgba(0, 0, 0, 0.6),
+                var(--shadow-glow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 520px;
+        }
+
+        .window-chrome {
+            background: linear-gradient(180deg, #252525 0%, #1e1e1e 100%);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            user-select: none;
+        }
+
+        .window-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        .window-dot:hover {
+            transform: scale(1.15);
+        }
+
+        .dot-close { background: #ff5f56; box-shadow: 0 0 4px rgba(255, 95, 86, 0.4); }
+        .dot-minimize { background: #ffbd2e; box-shadow: 0 0 4px rgba(255, 189, 46, 0.4); }
+        .dot-maximize { background: #27c93f; box-shadow: 0 0 4px rgba(39, 201, 63, 0.4); }
+
+        .window-title {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .terminal-container {
+            flex: 1;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #terminal {
+            width: 100%;
+            height: 100%;
+        }
+
+        .xterm {
+            height: 100%;
+            padding: 4px;
+        }
+
+        .xterm-viewport {
+            background-color: transparent !important;
+        }
+
+        /* Task Panel */
+        .task-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .task-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .task-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .task-counter {
+            font-size: 12px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .task-description {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            min-height: 48px;
+        }
+
+        .task-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .task-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .status-pending {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--accent-yellow);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .status-completed {
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+
+        .status-icon {
+            font-size: 14px;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, var(--accent-green) 0%, #22c55e 100%);
+            color: #000;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+        }
+
+        .next-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+        }
+
+        .next-btn:disabled {
+            background: var(--border-color);
+            color: var(--text-muted);
+            animation: none;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            margin-top: 16px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        /* Completion Screen */
+        .completion-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(12, 12, 12, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .completion-content {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .completion-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .completion-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .completion-text {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Completion Screen -->
+        <div v-if="allTasksCompleted" class="completion-screen">
+            <div class="completion-content">
+                <div class="completion-icon">🎉</div>
+                <h2 class="completion-title">All Tasks Complete!</h2>
+                <p class="completion-text">You've mastered the basics of Linux.<br>Great work!</p>
+            </div>
+        </div>
+
+        <!-- Terminal Window -->
+        <div class="terminal-window">
+            <div class="window-chrome">
+                <div class="window-dot dot-close"></div>
+                <div class="window-dot dot-minimize"></div>
+                <div class="window-dot dot-maximize"></div>
+                <div class="window-title">linguin@linux: ~</div>
+            </div>
+            <div class="terminal-container">
+                <div id="terminal"></div>
+            </div>
+        </div>
+
+        <!-- Task Panel -->
+        <div class="task-panel" v-if="currentTask && !allTasksCompleted">
+            <div class="task-header">
+                <span class="task-title">Current Mission</span>
+                <span class="task-counter">Task {{ currentTaskIndex + 1 }} / {{ totalTasks }}</span>
+            </div>
+            <div class="task-description">{{ currentTask.description }}</div>
+            <div class="task-footer">
+                <span class="task-status" :class="currentTask.completed ? 'status-completed' : 'status-pending'">
+                    <span class="status-icon">{{ currentTask.completed ? '✓' : '⏳' }}</span>
+                    {{ currentTask.completed ? 'Completed' : 'In Progress' }}
+                </span>
+                <button
+                    v-if="currentTask.completed && !isLastTask"
+                    class="next-btn"
+                    @click="nextTask"
+                >
+                    Next Step →
+                </button>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        // ANSI Color Codes (Ubuntu-style)
+        const ANSI = {
+            reset: '\x1b[0m',
+            bold: '\x1b[1m',
+            dim: '\x1b[2m',
+            // Foreground
+            black: '\x1b[30m',
+            red: '\x1b[31m',
+            green: '\x1b[32m',
+            yellow: '\x1b[33m',
+            blue: '\x1b[34m',
+            magenta: '\x1b[35m',
+            cyan: '\x1b[36m',
+            white: '\x1b[37m',
+            // Bright
+            brightRed: '\x1b[91m',
+            brightGreen: '\x1b[92m',
+            brightYellow: '\x1b[93m',
+            brightBlue: '\x1b[94m',
+            brightMagenta: '\x1b[95m',
+            brightCyan: '\x1b[96m',
+            brightWhite: '\x1b[97m'
+        };
+
+        // In-Memory Virtual File System
+        class VFS {
+            constructor() {
+                this.root = {
+                    type: 'dir',
+                    children: {
+                        home: {
+                            type: 'dir',
+                            children: {
+                                linguin: {
+                                    type: 'dir',
+                                    children: {
+                                        'welcome.txt': {
+                                            type: 'file',
+                                            content: 'Welcome to Linux Simulator!\n\nComplete the tasks to learn basic Linux commands.\nType "help" to see available commands.\n'
+                                        },
+                                        'notes': {
+                                            type: 'dir',
+                                            children: {
+                                                'todo.txt': {
+                                                    type: 'file',
+                                                    content: '- Learn Linux commands\n- Practice terminal navigation\n- Complete all tasks\n'
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        etc: {
+                            type: 'dir',
+                            children: {
+                                'passwd': {
+                                    type: 'file',
+                                    content: 'root:x:0:0:root:/root:/bin/bash\nlinguin:x:1000:1000:linguin:/home/linguin:/bin/bash\n'
+                                },
+                                'hostname': { type: 'file', content: 'linux\n' }
+                            }
+                        },
+                        usr: {
+                            type: 'dir',
+                            children: {
+                                bin: { type: 'dir', children: {} },
+                                share: {
+                                    type: 'dir',
+                                    children: {
+                                        'doc': {
+                                            type: 'dir',
+                                            children: {
+                                                'readme.txt': { type: 'file', content: 'Documentation files\n' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        var: {
+                            type: 'dir',
+                            children: {
+                                log: {
+                                    type: 'dir',
+                                    children: { 'syslog': { type: 'file', content: 'System log entries...\n' } }
+                                }
+                            }
+                        },
+                        tmp: { type: 'dir', children: {} }
+                    }
+                };
+                this.currentUser = 'linguin';
+                this.hostname = 'linux';
+                this._cwd = '/home/linguin';
+            }
+
+            get cwd() { return this._cwd; }
+            set cwd(value) { this._cwd = value; }
+
+            getPathParts(path) {
+                if (path.startsWith('/')) {
+                    return path.split('/').filter(p => p && p !== '.');
+                }
+                const cwdParts = this.cwd.split('/').filter(p => p);
+                const relParts = path.split('/').filter(p => p && p !== '.');
+                for (const part of relParts) {
+                    if (part === '..') cwdParts.pop();
+                    else cwdParts.push(part);
+                }
+                return cwdParts;
+            }
+
+            resolveNode(path) {
+                const parts = this.getPathParts(path);
+                let node = this.root;
+                for (const part of parts) {
+                    if (node.type !== 'dir' || !node.children[part]) return null;
+                    node = node.children[part];
+                }
+                return node;
+            }
+
+            resolveParent(path) {
+                const parts = this.getPathParts(path);
+                const filename = parts.pop();
+                let node = this.root;
+                for (const part of parts) {
+                    if (node.type !== 'dir' || !node.children[part]) return null;
+                    node = node.children[part];
+                }
+                return { parent: node, filename };
+            }
+
+            getDisplayPath(path) {
+                const home = '/home/linguin';
+                if (path === home) return '~';
+                if (path.startsWith(home + '/')) return '~' + path.slice(home.length);
+                return path;
+            }
+
+            listDir(path = this.cwd) {
+                const node = this.resolveNode(path);
+                if (!node || node.type !== 'dir') return null;
+                return Object.entries(node.children).map(([name, item]) => ({
+                    name, type: item.type, isHidden: name.startsWith('.')
+                }));
+            }
+
+            readFile(path) {
+                const node = this.resolveNode(path);
+                if (!node) return null;
+                if (node.type !== 'file') return false;
+                return node.content;
+            }
+
+            writeFile(path, content) {
+                const result = this.resolveParent(path);
+                if (!result) return false;
+                const { parent, filename } = result;
+                if (parent.type !== 'dir') return false;
+                parent.children[filename] = { type: 'file', content };
+                return true;
+            }
+
+            makeDir(path) {
+                const result = this.resolveParent(path);
+                if (!result) return false;
+                const { parent, filename } = result;
+                if (parent.type !== 'dir') return false;
+                if (parent.children[filename]) return false;
+                parent.children[filename] = { type: 'dir', children: {} };
+                return true;
+            }
+
+            remove(path) {
+                const result = this.resolveParent(path);
+                if (!result) return false;
+                const { parent, filename } = result;
+                if (!parent.children[filename]) return false;
+                delete parent.children[filename];
+                return true;
+            }
+
+            changeDir(path) {
+                if (path === '~' || !path) {
+                    this.cwd = '/home/linguin';
+                    return true;
+                }
+                const targetPath = path.startsWith('/') ? path : this.cwd + '/' + path;
+                const node = this.resolveNode(targetPath);
+                if (!node || node.type !== 'dir') return false;
+                this.cwd = targetPath.replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+                return true;
+            }
+
+            exists(path) {
+                return this.resolveNode(path) !== null;
+            }
+
+            isDirectory(path) {
+                const node = this.resolveNode(path);
+                return node && node.type === 'dir';
+            }
+
+            isFile(path) {
+                const node = this.resolveNode(path);
+                return node && node.type === 'file';
+            }
+
+            getPrompt() {
+                const displayPath = this.getDisplayPath(this.cwd);
+                return `${ANSI.brightGreen}${this.currentUser}@${this.hostname}${ANSI.reset}:${ANSI.brightBlue}${displayPath}${ANSI.reset}$ `;
+            }
+        }
+
+        // Task System
+        class TaskSystem {
+            constructor(vfs, terminal) {
+                this.vfs = vfs;
+                this.terminal = terminal;
+                this.tasks = [];
+                this.currentTaskIndex = 0;
+                this.commandHistory = [];
+                this.onTaskComplete = null;
+            }
+
+            addTask(description, checkFn) {
+                this.tasks.push({ description, checkFn, completed: false });
+            }
+
+            checkTasks() {
+                if (this.currentTaskIndex >= this.tasks.length) return;
+
+                const task = this.tasks[this.currentTaskIndex];
+                if (task.completed) return;
+
+                const result = task.checkFn(this.vfs, this.commandHistory);
+                if (result) {
+                    task.completed = true;
+                    this.terminal.writeln('');
+                    this.terminal.writeln(`${ANSI.brightGreen}✓ Task completed!${ANSI.reset}`);
+
+                    if (this.onTaskComplete) {
+                        this.onTaskComplete(this.currentTaskIndex);
+                    }
+                }
+            }
+
+            recordCommand(cmd) {
+                this.commandHistory.push({
+                    command: cmd,
+                    cwd: this.vfs.cwd,
+                    timestamp: Date.now()
+                });
+                // Check IMMEDIATELY after every command
+                this.checkTasks();
+            }
+
+            get currentTask() {
+                if (this.currentTaskIndex >= this.tasks.length) return null;
+                return { ...this.tasks[this.currentTaskIndex], index: this.currentTaskIndex };
+            }
+
+            nextTask() {
+                if (this.currentTaskIndex < this.tasks.length - 1) {
+                    this.currentTaskIndex++;
+                    return true;
+                }
+                return false;
+            }
+
+            get totalTasks() {
+                return this.tasks.length;
+            }
+
+            get allCompleted() {
+                return this.tasks.every(t => t.completed);
+            }
+        }
+
+        createApp({
+            data() {
+                return {
+                    terminal: null,
+                    vfs: null,
+                    taskSystem: null,
+                    commandBuffer: '',
+                    cursorPosition: 0,
+                    shellHistory: [],
+                    historyIndex: -1,
+                    savedInput: '',
+                    currentTaskIndex: 0,
+                    totalTasks: 0,
+                    allTasksCompleted: false
+                };
+            },
+            computed: {
+                currentTask() {
+                    return this.taskSystem?.currentTask;
+                },
+                isLastTask() {
+                    return this.currentTaskIndex >= this.totalTasks - 1;
+                },
+                progressPercent() {
+                    if (!this.totalTasks) return 0;
+                    return ((this.currentTaskIndex + (this.currentTask?.completed ? 1 : 0)) / this.totalTasks) * 100;
+                }
+            },
+            mounted() {
+                this.initTerminal();
+                this.initVFS();
+                this.initTasks();
+                this.showWelcome();
+                this.printPrompt();
+                this.setupInput();
+            },
+            methods: {
+                initTerminal() {
+                    this.terminal = new Terminal({
+                        fontSize: 14,
+                        fontFamily: '"JetBrains Mono", "Courier New", monospace',
+                        cursorBlink: true,
+                        cursorStyle: 'block',
+                        scrollback: 5000,
+                        theme: {
+                            background: '#1a1a1a',
+                            foreground: '#e8e8e8',
+                            cursor: '#e8e8e8',
+                            selectionBackground: '#3a3a3a',
+                            black: '#1a1a1a',
+                            red: '#ef4444',
+                            green: '#4ade80',
+                            yellow: '#fbbf24',
+                            blue: '#60a5fa',
+                            magenta: '#a78bfa',
+                            cyan: '#22d3d1',
+                            white: '#e8e8e8',
+                            brightBlack: '#6b6b6b',
+                            brightRed: '#f87171',
+                            brightGreen: '#86efac',
+                            brightYellow: '#fcd34d',
+                            brightBlue: '#93c5fd',
+                            brightMagenta: '#c4b5fd',
+                            brightCyan: '#67e8f9',
+                            brightWhite: '#ffffff'
+                        }
+                    });
+
+                    const fitAddon = new FitAddon.FitAddon();
+                    this.terminal.loadAddon(fitAddon);
+                    this.terminal.open(document.getElementById('terminal'));
+
+                    // Ensure proper sizing after mount
+                    setTimeout(() => fitAddon.fit(), 100);
+                    window.addEventListener('resize', () => fitAddon.fit());
+                },
+
+                initVFS() {
+                    this.vfs = new VFS();
+                },
+
+                initTasks() {
+                    this.taskSystem = new TaskSystem(this.vfs, this.terminal);
+                    this.taskSystem.onTaskComplete = (index) => {
+                        this.currentTaskIndex = index;
+                    };
+
+                    // Task 1: List files
+                    this.taskSystem.addTask(
+                        'List the contents of your home directory to see what files are available.',
+                        (vfs, history) => {
+                            return history.some(h =>
+                                h.command.trim() === 'ls' &&
+                                (h.cwd === '/home/linguin' || h.cwd === '~')
+                            );
+                        }
+                    );
+
+                    // Task 2: Create a directory
+                    this.taskSystem.addTask(
+                        'Create a new directory called "projects" in your home directory.',
+                        (vfs, history) => {
+                            const hasMkdir = history.some(h =>
+                                h.command.trim() === 'mkdir projects'
+                            );
+                            return hasMkdir && vfs.exists('/home/linguin/projects');
+                        }
+                    );
+
+                    // Task 3: Navigate into directory
+                    this.taskSystem.addTask(
+                        'Change into the "projects" directory you just created.',
+                        (vfs, history) => {
+                            return vfs.cwd === '/home/linguin/projects';
+                        }
+                    );
+
+                    // Task 4: Create a file with touch
+                    this.taskSystem.addTask(
+                        'Create an empty file called "app.js" inside the projects directory.',
+                        (vfs, history) => {
+                            return vfs.exists('/home/linguin/projects/app.js');
+                        }
+                    );
+
+                    // Task 5: Write content with echo
+                    this.taskSystem.addTask(
+                        'Write "console.log(\'Hello World\');" to app.js using echo with redirection.',
+                        (vfs, history) => {
+                            const content = vfs.readFile('/home/linguin/projects/app.js');
+                            return content && content.includes('Hello World');
+                        }
+                    );
+
+                    // Task 6: View file content
+                    this.taskSystem.addTask(
+                        'View the contents of app.js using the cat command.',
+                        (vfs, history) => {
+                            return history.some(h =>
+                                h.command.trim() === 'cat app.js' &&
+                                h.cwd === '/home/linguin/projects'
+                            );
+                        }
+                    );
+
+                    // Task 7: Create a subdirectory
+                    this.taskSystem.addTask(
+                        'Create a subdirectory called "src" inside projects, then navigate into it.',
+                        (vfs, history) => {
+                            return vfs.exists('/home/linguin/projects/src') &&
+                                   vfs.cwd === '/home/linguin/projects/src';
+                        }
+                    );
+
+                    // Task 8: Navigate back and check pwd
+                    this.taskSystem.addTask(
+                        'Go back to the projects directory and verify your location with pwd.',
+                        (vfs, history) => {
+                            const hasPwd = history.some(h =>
+                                h.command.trim() === 'pwd' &&
+                                h.cwd === '/home/linguin/projects'
+                            );
+                            return hasPwd;
+                        }
+                    );
+
+                    this.totalTasks = this.taskSystem.totalTasks;
+                },
+
+                showWelcome() {
+                    this.terminal.writeln(`${ANSI.brightGreen}Welcome to Linux Simulator v2.0${ANSI.reset}`);
+                    this.terminal.writeln(`${ANSI.dim}Complete the tasks below to learn Linux basics${ANSI.reset}`);
+                    this.terminal.writeln(`${ANSI.dim}Type 'help' for available commands${ANSI.reset}`);
+                    this.terminal.writeln('');
+                },
+
+                printPrompt() {
+                    this.terminal.write(this.vfs.getPrompt());
+                },
+
+                setupInput() {
+                    this.terminal.onData(data => {
+                        const code = data.charCodeAt(0);
+
+                        if (data === '\r') {
+                            this.executeCommand();
+                        } else if (data === '\x7f') {
+                            this.handleBackspace();
+                        } else if (data === '\t') {
+                            this.handleTab();
+                        } else if (data === '\x1b[A') {
+                            this.handleArrowUp();
+                        } else if (data === '\x1b[B') {
+                            this.handleArrowDown();
+                        } else if (data === '\x1b[C') {
+                            this.handleArrowRight();
+                        } else if (data === '\x1b[D') {
+                            this.handleArrowLeft();
+                        } else if (data === '\x1b[H') {
+                            this.handleHome();
+                        } else if (data === '\x1b[F') {
+                            this.handleEnd();
+                        } else if (data === '\x03') {
+                            this.handleInterrupt();
+                        } else if (data === '\x0c') {
+                            this.terminal.clear();
+                            this.printPrompt();
+                            this.terminal.write(this.commandBuffer);
+                        } else if (code >= 32 && code < 127) {
+                            this.handleChar(data);
+                        }
+                    });
+                },
+
+                handleChar(char) {
+                    const before = this.commandBuffer.slice(0, this.cursorPosition);
+                    const after = this.commandBuffer.slice(this.cursorPosition);
+                    this.commandBuffer = before + char + after;
+                    this.cursorPosition++;
+                    this.redrawLine();
+                },
+
+                handleBackspace() {
+                    if (this.cursorPosition > 0) {
+                        const before = this.commandBuffer.slice(0, this.cursorPosition - 1);
+                        const after = this.commandBuffer.slice(this.cursorPosition);
+                        this.commandBuffer = before + after;
+                        this.cursorPosition--;
+                        this.redrawLine();
+                    }
+                },
+
+                handleArrowUp() {
+                    if (this.historyIndex === -1) {
+                        this.savedInput = this.commandBuffer;
+                    }
+                    if (this.historyIndex < this.shellHistory.length - 1) {
+                        this.historyIndex++;
+                        this.commandBuffer = this.shellHistory[this.shellHistory.length - 1 - this.historyIndex];
+                        this.cursorPosition = this.commandBuffer.length;
+                        this.redrawLine();
+                    }
+                },
+
+                handleArrowDown() {
+                    if (this.historyIndex > 0) {
+                        this.historyIndex--;
+                        this.commandBuffer = this.shellHistory[this.shellHistory.length - 1 - this.historyIndex];
+                        this.cursorPosition = this.commandBuffer.length;
+                    } else if (this.historyIndex === 0) {
+                        this.historyIndex = -1;
+                        this.commandBuffer = this.savedInput;
+                        this.cursorPosition = this.commandBuffer.length;
+                    }
+                    this.redrawLine();
+                },
+
+                handleArrowLeft() {
+                    if (this.cursorPosition > 0) {
+                        this.cursorPosition--;
+                        this.terminal.write('\x1b[D');
+                    }
+                },
+
+                handleArrowRight() {
+                    if (this.cursorPosition < this.commandBuffer.length) {
+                        this.cursorPosition++;
+                        this.terminal.write('\x1b[C');
+                    }
+                },
+
+                handleHome() {
+                    this.terminal.write(`\x1b[${this.cursorPosition}D`);
+                    this.cursorPosition = 0;
+                },
+
+                handleEnd() {
+                    const remaining = this.commandBuffer.length - this.cursorPosition;
+                    this.terminal.write(`\x1b[${remaining}C`);
+                    this.cursorPosition = this.commandBuffer.length;
+                },
+
+                handleInterrupt() {
+                    this.terminal.write('^C');
+                    this.commandBuffer = '';
+                    this.cursorPosition = 0;
+                    this.terminal.writeln('');
+                    this.printPrompt();
+                },
+
+                redrawLine() {
+                    const promptLength = this.getPromptVisibleLength();
+                    this.terminal.write(`\r\x1b[K`);
+                    this.printPrompt();
+                    this.terminal.write(this.commandBuffer);
+                    const offset = this.commandBuffer.length - this.cursorPosition;
+                    if (offset > 0) {
+                        this.terminal.write(`\x1b[${offset}D`);
+                    }
+                },
+
+                getPromptVisibleLength() {
+                    return `${this.vfs.currentUser}@${this.vfs.hostname}:${this.vfs.getDisplayPath(this.vfs.cwd)}$ `.length;
+                },
+
+                handleTab() {
+                    const parts = this.commandBuffer.split(' ');
+                    const isCommand = parts.length === 1 || (parts.length === 2 && parts[0] === '');
+
+                    if (parts.length === 1) {
+                        const commands = ['ls', 'cd', 'pwd', 'cat', 'mkdir', 'touch', 'rm', 'echo', 'clear', 'help', 'whoami', 'date', 'history', 'exit'];
+                        const matches = commands.filter(c => c.startsWith(this.commandBuffer));
+                        if (matches.length === 1) {
+                            this.commandBuffer = matches[0];
+                            this.cursorPosition = this.commandBuffer.length;
+                            this.redrawLine();
+                        } else if (matches.length > 1) {
+                            this.terminal.writeln('');
+                            this.terminal.writeln(matches.join('  '));
+                            this.printPrompt();
+                            this.terminal.write(this.commandBuffer);
+                        }
+                    } else {
+                        const cmd = parts[0];
+                        const partial = parts[parts.length - 1];
+                        const dirPath = partial.includes('/') ? partial.substring(0, partial.lastIndexOf('/') + 1) : '';
+                        const partialName = partial.includes('/') ? partial.substring(partial.lastIndexOf('/') + 1) : partial;
+                        const searchDir = dirPath.startsWith('/') ? dirPath.slice(0, -1) || '/' :
+                            (dirPath ? this.vfs.cwd + '/' + dirPath.slice(0, -1) : this.vfs.cwd);
+
+                        const items = this.vfs.listDir(searchDir) || [];
+                        const matches = items.filter(item => item.name.startsWith(partialName));
+
+                        if (matches.length === 1) {
+                            const completion = dirPath + matches[0].name + (matches[0].type === 'dir' ? '/' : '');
+                            parts[parts.length - 1] = completion;
+                            this.commandBuffer = parts.join(' ');
+                            this.cursorPosition = this.commandBuffer.length;
+                            this.redrawLine();
+                        } else if (matches.length > 1) {
+                            this.terminal.writeln('');
+                            matches.forEach(m => {
+                                const color = m.type === 'dir' ? ANSI.brightBlue : ANSI.reset;
+                                this.terminal.write(`${color}${m.name}${ANSI.reset}  `);
+                            });
+                            this.terminal.writeln('');
+                            this.printPrompt();
+                            this.terminal.write(this.commandBuffer);
+                        }
+                    }
+                },
+
+                executeCommand() {
+                    this.terminal.writeln('');
+                    const command = this.commandBuffer.trim();
+
+                    if (command) {
+                        this.shellHistory.push(command);
+                        // Record command triggers task check immediately
+                        this.taskSystem.recordCommand(command);
+                        this.processCommand(command);
+
+                        // Check if all tasks completed
+                        if (this.taskSystem.allCompleted) {
+                            this.allTasksCompleted = true;
+                        }
+                    }
+
+                    this.commandBuffer = '';
+                    this.cursorPosition = 0;
+                    this.historyIndex = -1;
+                    this.printPrompt();
+                },
+
+                processCommand(commandLine) {
+                    const parts = commandLine.split(/\s+/);
+                    const cmd = parts[0];
+                    const args = parts.slice(1);
+
+                    switch (cmd) {
+                        case 'ls': this.cmdLs(args); break;
+                        case 'cd': this.cmdCd(args); break;
+                        case 'pwd': this.terminal.writeln(this.vfs.cwd); break;
+                        case 'cat': this.cmdCat(args); break;
+                        case 'mkdir': this.cmdMkdir(args); break;
+                        case 'touch': this.cmdTouch(args); break;
+                        case 'rm': this.cmdRm(args); break;
+                        case 'echo': this.cmdEcho(args, commandLine); break;
+                        case 'clear': this.terminal.clear(); break;
+                        case 'help': this.cmdHelp(); break;
+                        case 'whoami': this.terminal.writeln(this.vfs.currentUser); break;
+                        case 'date': this.terminal.writeln(new Date().toString()); break;
+                        case 'history': this.cmdHistory(); break;
+                        case 'exit': this.terminal.writeln('Goodbye!'); setTimeout(() => location.reload(), 500); break;
+                        default:
+                            this.terminal.writeln(`${ANSI.red}command not found: ${cmd}${ANSI.reset}`);
+                            this.terminal.writeln(`Type 'help' for available commands`);
+                    }
+                },
+
+                cmdLs(args) {
+                    const showAll = args.includes('-a');
+                    const longFmt = args.includes('-l');
+                    const pathArg = args.find(a => !a.startsWith('-'));
+                    const path = pathArg || this.vfs.cwd;
+
+                    const items = this.vfs.listDir(path);
+                    if (!items) {
+                        this.terminal.writeln(`${ANSI.red}ls: cannot access '${path}': No such file or directory${ANSI.reset}`);
+                        return;
+                    }
+
+                    const filtered = showAll ? items : items.filter(i => !i.isHidden);
+
+                    if (longFmt) {
+                        filtered.forEach(item => {
+                            const type = item.type === 'dir' ? 'drwxr-xr-x' : '-rw-r--r--';
+                            const size = item.type === 'dir' ? '4096' : '0';
+                            const date = new Date().toLocaleDateString('en-US', { month: 'short', day: '2digit' });
+                            const color = item.type === 'dir' ? ANSI.brightBlue : ANSI.reset;
+                            this.terminal.writeln(`${type} 1 ${this.vfs.currentUser} ${this.vfs.currentUser} ${size.padStart(5)} ${date} ${color}${item.name}${ANSI.reset}`);
+                        });
+                    } else {
+                        filtered.forEach(item => {
+                            const color = item.type === 'dir' ? ANSI.brightBlue : ANSI.reset;
+                            this.terminal.write(`${color}${item.name}${ANSI.reset}  `);
+                        });
+                        this.terminal.writeln('');
+                    }
+                },
+
+                cmdCd(args) {
+                    const path = args[0] || '~';
+                    if (!this.vfs.changeDir(path)) {
+                        this.terminal.writeln(`${ANSI.red}cd: ${path}: No such file or directory${ANSI.reset}`);
+                    }
+                },
+
+                cmdCat(args) {
+                    if (args.length === 0) {
+                        this.terminal.writeln(`${ANSI.red}cat: missing operand${ANSI.reset}`);
+                        return;
+                    }
+                    args.forEach(file => {
+                        const content = this.vfs.readFile(file);
+                        if (content === null) {
+                            this.terminal.writeln(`${ANSI.red}cat: ${file}: No such file or directory${ANSI.reset}`);
+                        } else if (content === false) {
+                            this.terminal.writeln(`${ANSI.red}cat: ${file}: Is a directory${ANSI.reset}`);
+                        } else {
+                            this.terminal.writeln(content.replace(/\n$/, ''));
+                        }
+                    });
+                },
+
+                cmdMkdir(args) {
+                    if (args.length === 0) {
+                        this.terminal.writeln(`${ANSI.red}mkdir: missing operand${ANSI.reset}`);
+                        return;
+                    }
+                    args.forEach(dir => {
+                        if (!this.vfs.makeDir(dir)) {
+                            this.terminal.writeln(`${ANSI.red}mkdir: cannot create directory '${dir}': File exists${ANSI.reset}`);
+                        }
+                    });
+                },
+
+                cmdTouch(args) {
+                    if (args.length === 0) {
+                        this.terminal.writeln(`${ANSI.red}touch: missing file operand${ANSI.reset}`);
+                        return;
+                    }
+                    args.forEach(file => this.vfs.writeFile(file, ''));
+                },
+
+                cmdRm(args) {
+                    const recursive = args.includes('-r') || args.includes('-rf');
+                    const targets = args.filter(a => !a.startsWith('-'));
+                    if (targets.length === 0) {
+                        this.terminal.writeln(`${ANSI.red}rm: missing operand${ANSI.reset}`);
+                        return;
+                    }
+                    targets.forEach(target => {
+                        const node = this.vfs.resolveNode(target);
+                        if (!node) {
+                            this.terminal.writeln(`${ANSI.red}rm: cannot remove '${target}': No such file or directory${ANSI.reset}`);
+                        } else if (node.type === 'dir' && !recursive) {
+                            this.terminal.writeln(`${ANSI.red}rm: cannot remove '${target}': Is a directory${ANSI.reset}`);
+                        } else {
+                            this.vfs.remove(target);
+                        }
+                    });
+                },
+
+                cmdEcho(args, fullLine) {
+                    const redirectMatch = fullLine.match(/(.+?)\s*>\s*(.+)/);
+                    if (redirectMatch) {
+                        const text = redirectMatch[1].replace(/^echo\s+/, '').replace(/^["']|["']$/g, '');
+                        const filename = redirectMatch[2].trim();
+                        this.vfs.writeFile(filename, text + '\n');
+                    } else {
+                        this.terminal.writeln(args.join(' ').replace(/^["']|["']$/g, ''));
+                    }
+                },
+
+                cmdHelp() {
+                    const help = [
+                        ['ls [dir]', 'List directory contents'],
+                        ['cd [dir]', 'Change directory'],
+                        ['pwd', 'Print working directory'],
+                        ['cat [file]', 'Display file contents'],
+                        ['mkdir [dir]', 'Create directory'],
+                        ['touch [file]', 'Create empty file'],
+                        ['rm [file]', 'Remove file'],
+                        ['echo [text]', 'Print text (> to redirect)'],
+                        ['clear', 'Clear screen'],
+                        ['help', 'Show this help'],
+                        ['exit', 'Exit simulator']
+                    ];
+                    this.terminal.writeln(`${ANSI.brightCyan}Available Commands:${ANSI.reset}`);
+                    help.forEach(([cmd, desc]) => {
+                        this.terminal.writeln(`  ${ANSI.brightGreen}${cmd.padEnd(16)}${ANSI.reset} ${desc}`);
+                    });
+                },
+
+                cmdHistory() {
+                    this.shellHistory.forEach((cmd, i) => {
+                        this.terminal.writeln(`  ${(i + 1).toString().padStart(3)}  ${cmd}`);
+                    });
+                },
+
+                nextTask() {
+                    if (this.taskSystem.nextTask()) {
+                        this.currentTaskIndex = this.taskSystem.currentTaskIndex;
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -28,6 +28,10 @@ import LessonDetailView from '../pages/LessonView.vue'
 import TerminalPage from '../pages/TerminalPage.vue'
 import CollaborationPage from '../pages/CollaborationPage.vue'
 
+// Unified Lesson View
+import LessonView from '../pages/LessonView.vue'
+import GratisPage from "@/pages/GratisPage.vue";
+
 const router = createRouter({
     history: createWebHistory(),
     routes: [
@@ -37,7 +41,9 @@ const router = createRouter({
         { path: '/lessons', component: LessonsPage },
         { path: '/about', component: AboutPage },
         { path: '/contact', component: ContactPage },
+        {path: '/free', component: GratisPage},
 
+        // Legacy Lesson Routes (slug-based) - können bei Bedarf weiterhin genutzt werden
         // STATISCHE ROUTEN (Deine händischen Files)
         { path: '/lessons/linux-fundamentals', component: LinuxFundamentals },
         { path: '/lessons/essential-commands', component: EssentialCommands },
@@ -46,6 +52,10 @@ const router = createRouter({
         { path: '/lessons/network-commands', component: NetworkCommands },
         { path: '/lessons/shell-scripting', component: ShellScripting },
 
+        // NEW: Unified Lesson View (ID-based) mit Progress Sync
+        { path: '/lessons/:id', component: LessonView, props: true },
+
+        // Tools
         // DYNAMISCHE ROUTE (Für alles aus der Datenbank)
         // WICHTIG: Diese Route muss UNTER den statischen stehen,
         // damit 'linux-fundamentals' nicht als ID interpretiert wird.

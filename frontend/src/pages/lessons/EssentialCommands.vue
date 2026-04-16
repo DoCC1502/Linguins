@@ -1,12 +1,15 @@
-<script setup>
-const tasks = [
-  { q:'Copy files', c:'cp', a:'', r:null },
-  { q:'Move files', c:'mv', a:'', r:null },
-  { q:'Remove files', c:'rm', a:'', r:null },
-  { q:'Show file content', c:'cat', a:'', r:null },
-  { q:'Create file', c:'touch', a:'', r:null }
-]
-const check = t => t.r = t.a === t.c
+<script setup lang="ts">
+import type { Task } from '@/types/types';
+
+const tasks: Task[] = [
+  { q: 'Copy files', c: 'cp', a: '', r: null },
+  { q: 'Move files', c: 'mv', a: '', r: null },
+  { q: 'Remove files', c: 'rm', a: '', r: null },
+  { q: 'Show file content', c: 'cat', a: '', r: null },
+  { q: 'Create file', c: 'touch', a: '', r: null }
+];
+
+const check = (t: Task): boolean => t.r = t.a.trim().toLowerCase() === t.c.toLowerCase();
 </script>
 
 <template>
