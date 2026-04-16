@@ -1,4 +1,3 @@
-import { createRouter, createWebHistory } from 'vue-router'
 
 import homepage from '../pages/homepage.vue'
 import signInPage from '../pages/signInPage.vue'
@@ -21,6 +20,10 @@ import NetworkCommands from '../pages/lessons/NetworkCommands.vue'
 // @ts-ignore
 import ShellScripting from '../pages/lessons/ShellScripting.vue'
 
+import { createRouter, createWebHistory } from 'vue-router'
+
+import LessonDetailView from '../pages/LessonView.vue'
+
 // Terminal and Collaboration
 import TerminalPage from '../pages/TerminalPage.vue'
 import CollaborationPage from '../pages/CollaborationPage.vue'
@@ -32,7 +35,6 @@ import GratisPage from "@/pages/GratisPage.vue";
 const router = createRouter({
     history: createWebHistory(),
     routes: [
-        // Main Routes
         { path: '/', component: homepage },
         { path: '/signin', component: signInPage },
         { path: '/register', component: registerPage },
@@ -42,6 +44,7 @@ const router = createRouter({
         {path: '/free', component: GratisPage},
 
         // Legacy Lesson Routes (slug-based) - können bei Bedarf weiterhin genutzt werden
+        // STATISCHE ROUTEN (Deine händischen Files)
         { path: '/lessons/linux-fundamentals', component: LinuxFundamentals },
         { path: '/lessons/essential-commands', component: EssentialCommands },
         { path: '/lessons/file-permissions', component: FilePermissions },
@@ -53,6 +56,16 @@ const router = createRouter({
         { path: '/lessons/:id', component: LessonView, props: true },
 
         // Tools
+        // DYNAMISCHE ROUTE (Für alles aus der Datenbank)
+        // WICHTIG: Diese Route muss UNTER den statischen stehen,
+        // damit 'linux-fundamentals' nicht als ID interpretiert wird.
+        {
+            path: '/lessons/:id',
+            name: 'lesson-detail',
+            component: LessonDetailView,
+            props: true
+        },
+
         { path: '/terminal', component: TerminalPage },
         { path: '/collaboration', component: CollaborationPage }
     ]

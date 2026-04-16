@@ -102,12 +102,25 @@ onUnmounted(() => {
   border-bottom: 1px solid var(--border-soft);
 }
 
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
+.nav-username {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #42b883;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
 
 ul {
   display: flex;
   gap: 1.8rem;
   list-style: none;
+  align-items: center;
 }
 
 a {
@@ -142,7 +155,7 @@ a:hover {
 }
 
 .brand img {
-  height: 80px;        /* NOCH GRÖSSER */
+  height: 80px;
   width: auto;
   opacity: 1;
   transition: transform 0.2s ease;

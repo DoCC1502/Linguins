@@ -8,29 +8,35 @@ import { lessonProvider } from "@/data/lessonProvider";
 const API_BASE_URL = 'http://localhost:8080/api';
 
 export const lessonService = {
+
     /**
-     * Lädt alle verfügbaren Lektionen vom Server
+     * Lädt den Text-Inhalt (aus der Tabelle lesson_content)
+     * Pfad angepasst an deinen Java-Controller: /api/lesson-contents/lesson/{id}
      */
-    async getAllLessons(): Promise<LessonDto[]> {
-        const response = await fetch(`${API_BASE_URL}/lessons`);
+    async getLessonContent(lessonId: number): Promise<LessonContentDto> {
+        // Pfad korrigiert!
+        const response = await fetch(`${API_BASE_URL}/lesson-contents/lesson/${lessonId}`);
 
         if (!response.ok) {
-            throw new Error('Fehler beim Laden der Lektionen');
+            throw new Error(`Fehler beim Laden des Inhalts für Lektion ${lessonId}`);
         }
 
         return await response.json();
     },
 
+
     /**
      * Lädt den spezifischen Inhalt einer Lektion anhand ihrer ID
      * (Legacy - verwendet Backend API)
      * @deprecated Verwende stattdessen getStaticContent()
+     * Lädt die Basis-Infos der Lektion (Titel, Schwierigkeit)
      */
-    async getLessonContent(lessonId: number): Promise<LessonContentDto> {
-        const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}/content`);
+    async getLessonById(id: number): Promise<LessonDto> {
+        // Variable 'id' korrigiert und .json() statt .data verwendet
+        const response = await fetch(`${API_BASE_URL}/lessons/${id}`);
 
         if (!response.ok) {
-            throw new Error(`Fehler beim Laden des Inhalts für Lektion ${lessonId}`);
+            throw new Error('Lektion nicht gefunden');
         }
 
         return await response.json();
@@ -56,12 +62,13 @@ export const lessonService = {
 
     /**
      * Beispiel: Lädt eine einzelne Lektion (Metadaten) anhand der ID
+     * Lädt alle Lektionen für das Dashboard
      */
-    async getLessonById(lessonId: number): Promise<LessonDto> {
-        const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}`);
+    async getAllLessons(): Promise<LessonDto[]> {
+        const response = await fetch(`${API_BASE_URL}/lessons`);
 
         if (!response.ok) {
-            throw new Error('Lektion wurde nicht gefunden');
+            throw new Error('Fehler beim Laden aller Lektionen');
         }
 
         return await response.json();
