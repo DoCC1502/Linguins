@@ -1,4 +1,3 @@
-
 import homepage from '../pages/homepage.vue'
 import signInPage from '../pages/signInPage.vue'
 import registerPage from '../pages/registerPage.vue'
@@ -20,7 +19,7 @@ import NetworkCommands from '../pages/lessons/NetworkCommands.vue'
 // @ts-ignore
 import ShellScripting from '../pages/lessons/ShellScripting.vue'
 
-import { createRouter, createWebHistory } from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 
 import LessonDetailView from '../pages/LessonView.vue'
 
@@ -33,27 +32,27 @@ import LessonView from '../pages/LessonView.vue'
 import GratisPage from "@/pages/GratisPage.vue";
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHistory("/"),
     routes: [
-        { path: '/', component: homepage },
-        { path: '/signin', component: signInPage },
-        { path: '/register', component: registerPage },
-        { path: '/lessons', component: LessonsPage },
-        { path: '/about', component: AboutPage },
-        { path: '/contact', component: ContactPage },
+        {path: '/', component: homepage},
+        {path: '/signin', component: signInPage},
+        {path: '/register', component: registerPage},
+        {path: '/lessons', component: LessonsPage},
+        {path: '/about', component: AboutPage},
+        {path: '/contact', component: ContactPage},
         {path: '/free', component: GratisPage},
 
         // Legacy Lesson Routes (slug-based) - können bei Bedarf weiterhin genutzt werden
         // STATISCHE ROUTEN (Deine händischen Files)
-        { path: '/lessons/linux-fundamentals', component: LinuxFundamentals },
-        { path: '/lessons/essential-commands', component: EssentialCommands },
-        { path: '/lessons/file-permissions', component: FilePermissions },
-        { path: '/lessons/process-management', component: ProcessManagement },
-        { path: '/lessons/network-commands', component: NetworkCommands },
-        { path: '/lessons/shell-scripting', component: ShellScripting },
+        {path: '/lessons/linux-fundamentals', component: LinuxFundamentals},
+        {path: '/lessons/essential-commands', component: EssentialCommands},
+        {path: '/lessons/file-permissions', component: FilePermissions},
+        {path: '/lessons/process-management', component: ProcessManagement},
+        {path: '/lessons/network-commands', component: NetworkCommands},
+        {path: '/lessons/shell-scripting', component: ShellScripting},
 
         // NEW: Unified Lesson View (ID-based) mit Progress Sync
-        { path: '/lessons/:id', component: LessonView, props: true },
+        {path: '/lessons/:id', component: LessonView, props: true},
 
         // Tools
         // DYNAMISCHE ROUTE (Für alles aus der Datenbank)
@@ -66,8 +65,8 @@ const router = createRouter({
             props: true
         },
 
-        { path: '/terminal', component: TerminalPage },
-        { path: '/collaboration', component: CollaborationPage }
+        {path: '/terminal', component: TerminalPage},
+        {path: '/collaboration', component: CollaborationPage}
     ]
 })
 
