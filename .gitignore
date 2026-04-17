@@ -29,3 +29,5 @@ replay_pid*
 *.png
 
 .idea/
+
+LinguinsSpringBoot/src/main/resources/static/
