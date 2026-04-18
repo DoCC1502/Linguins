@@ -66,7 +66,13 @@ const router = createRouter({
         },
 
         {path: '/terminal', component: TerminalPage},
-        {path: '/collaboration', component: CollaborationPage}
+        {path: '/collaboration', component: CollaborationPage},
+        {
+            path: '/admin/create-lesson',
+            name: 'LessonCreate',
+            component: () => import('../pages/LessonCreateView.vue'),
+            // Optional: Meta-Feld für Admin-Check hinzufügen
+        }
     ]
 })
 

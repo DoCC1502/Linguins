@@ -3,6 +3,7 @@ package at.ac.tgm.linguinsspringboot.service.impl;
 import at.ac.tgm.linguinsspringboot.converter.LinguinsMapper;
 import at.ac.tgm.linguinsspringboot.dto.LessonContentDto;
 import at.ac.tgm.linguinsspringboot.entity.LessonEntity;
+import at.ac.tgm.linguinsspringboot.exception.ResourceNotFoundException;
 import at.ac.tgm.linguinsspringboot.repository.LessonContentRepository;
 import at.ac.tgm.linguinsspringboot.repository.LessonRepository;
 import at.ac.tgm.linguinsspringboot.service.LessonContentService;
@@ -26,11 +27,20 @@ public class LessonContentServiceImpl implements LessonContentService {
     }
 
 
+    // LessonContentServiceImpl.java
     @Override
     public LessonContentDto create(LessonContentDto dto) {
-        LessonContentEntity saved = mapper.toEntity(dto);
-        saved = repo.save(saved);
-        return mapper.toDto(saved);
+        // 1. Die dazugehörige Lektion finden
+        LessonEntity lesson = lessonRepo.findById(dto.getLessonId())
+                .orElseThrow(() -> new ResourceNotFoundException("Lektion mit ID " + dto.getLessonId() + " nicht gefunden"));
+
+        // 2. Entity erstellen und JSON-String setzen
+        LessonContentEntity entity = new LessonContentEntity();
+        entity.setLesson(lesson);
+        entity.setContent(dto.getContent()); // Das ist dein JSON.stringify(tasks)
+
+        // 3. Speichern und zurückgeben
+        return mapper.toDto(repo.save(entity));
     }
 
     @Override
@@ -64,7 +74,14 @@ public class LessonContentServiceImpl implements LessonContentService {
 
     @Override
     public Optional<LessonContentDto> getByLessonId(Long lessonId) {
-        return repo.findByLessonId(lessonId).map(mapper::toDto);    }
+        return repo.findByLessonId(lessonId).map(mapper::toDto);
+    }
+
+    public LessonContentDto getContentByLessonId(Long lessonId) {
+        LessonContentEntity entity = repo.findByLessonId(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Inhalt für Lektion " + lessonId + " nicht gefunden"));
+        return mapper.toDto(entity);
+    }
 
     @Override
     public void delete(Long id) {

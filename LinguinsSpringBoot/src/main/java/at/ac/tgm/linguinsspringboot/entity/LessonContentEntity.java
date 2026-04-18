@@ -3,7 +3,7 @@
 //import jakarta.persistence.*;
 //import lombok.Data;
 //
-///**
+/// **
 // * Entity präsentiert den Inhalt einer Lektion.
 // *
 // * @author LinguinsTeam
@@ -26,7 +26,7 @@
 package at.ac.tgm.linguinsspringboot.entity;
 
 import jakarta.persistence.*;
-        import lombok.Data;
+import lombok.Data;
 
 /**
  * Entity präsentiert den Inhalt einer Lektion.
@@ -42,6 +42,7 @@ public class LessonContentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @OneToOne

@@ -7,17 +7,20 @@ export interface UserDto {
     lastLogin?: string;
     role?: string;
 }
+
 export interface LessonDto {
     id?: number;
     title: string;
     description: string;
     difficulty: number;
 }
+
 export interface LessonContentDto {
     id?: number;
     lessonId: number;
     content: string;
 }
+
 export interface UserLessonResultDto {
     id?: number;
     userId: number;
@@ -26,6 +29,7 @@ export interface UserLessonResultDto {
     passed?: boolean;
     completedAt?: string;
 }
+
 export interface UserProgressDto {
     id?: number;
     userId: number;
@@ -35,21 +39,29 @@ export interface UserProgressDto {
 }
 
 /**
- * Interface für statischen Lektionsinhalt (Frontend-seitig)
- * Alle Dateien in src/pages/lessons müssen diesen Typ verwenden
+ * Eine einzelne Aufgabe, wie sie im JSON-String der DB gespeichert wird.
+ * Nur die reinen Daten: Frage (q) und korrekte Antwort (c).
  */
-export interface Task {
-    q: string;      // question
-    c: string;      // correct answer
-    a: string;      // user answer
-    r: boolean | null;  // result (null = not checked, true = correct, false = wrong)
+export interface QuizTask {
+    q: string; // Question
+    c: string; // Correct Answer
 }
 
-export interface LessonContent {
-    id: number;                     // Mapped from backend LessonDto.id
+/**
+ * Der Zustand einer Aufgabe während der User sie bearbeitet.
+ * Erweitert QuizTask um flüchtige UI-Felder.
+ */
+export interface ActiveTask extends QuizTask {
+    a: string;          // Aktuelle Eingabe des Users
+    r: boolean | null;  // Ergebnis (null = ungeprüft)
+}
+
+/**
+ * Das komplette Objekt, das dein LessonView.vue konsumiert.
+ */
+export interface ActiveLesson {
+    id: number;
     title: string;
     description: string;
-    difficulty: number;
-    tasks: Task[];
+    tasks: ActiveTask[];
 }
-

@@ -1,9 +1,8 @@
 import type {
     LessonDto,
-    LessonContentDto,
-    LessonContent
+    LessonContentDto
 } from "@/types/types";
-import { lessonProvider } from "@/data/lessonProvider";
+import {lessonProvider} from "@/data/lessonProvider";
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -43,24 +42,6 @@ export const lessonService = {
     },
 
     /**
-     * NEU: Lädt statische Lektionsinhalte vom lokalen Frontend-Provider
-     * Statt /content API zu verwenden
-     */
-    getStaticContent(lessonId: number): LessonContent | null {
-        const content = lessonProvider.getLessonContent(lessonId);
-        if (!content) {
-            console.warn(`Kein statischer Inhalt für Lektion ${lessonId} gefunden`);
-            return null;
-        }
-
-        // Deep clone damit jede Lektion ihren eigenen State hat
-        return {
-            ...content,
-            tasks: content.tasks.map(task => ({ ...task }))
-        };
-    },
-
-    /**
      * Beispiel: Lädt eine einzelne Lektion (Metadaten) anhand der ID
      * Lädt alle Lektionen für das Dashboard
      */
@@ -86,7 +67,7 @@ export const lessonService = {
     ): Promise<void> {
         const response = await fetch(`${API_BASE_URL}/user-progress`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 userId,
                 lessonId,
@@ -112,7 +93,7 @@ export const lessonService = {
     ): Promise<void> {
         const response = await fetch(`${API_BASE_URL}/user-lesson-result`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 userId,
                 lessonId,
@@ -148,6 +129,50 @@ export const lessonService = {
             await this.updateUserProgress(userId, lessonId, percentage, 'IN_PROGRESS');
         }
 
-        return { score, passed };
+        return {score, passed};
+    },
+
+
+    /**
+     * Erstellt eine neue Basis-Lektion (Metadaten)
+     * POST /api/lessons
+     */
+    async createLesson(lesson: LessonDto): Promise<LessonDto> {
+        const response = await fetch(`${API_BASE_URL}/lessons`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(lesson)
+        });
+        if (!response.ok) throw new Error('Fehler beim Erstellen der Lektion');
+        return await response.json();
+    },
+
+    /**
+     * Speichert den JSON-Inhalt für eine Lektion
+     * POST /api/lesson-contents
+     */
+    async createLessonContent(content: LessonContentDto): Promise<LessonContentDto> {
+        const response = await fetch(`${API_BASE_URL}/lesson-contents`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(content)
+        });
+        if (!response.ok) throw new Error('Fehler beim Speichern des Lektionsinhalts');
+        return await response.json();
+    },
+
+    /**
+     * Aktualisiert eine bestehende Lektion
+     * PUT /api/lessons/{id}
+     */
+    async updateLesson(id: number, lesson: LessonDto): Promise<LessonDto> {
+        const response = await fetch(`${API_BASE_URL}/lessons/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(lesson)
+        });
+        if (!response.ok) throw new Error('Fehler beim Aktualisieren der Lektion');
+        return await response.json();
     }
+
 };
