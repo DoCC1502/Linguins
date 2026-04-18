@@ -44,7 +44,7 @@ public class LinguinsController {
     public ResponseEntity<LessonDto> createLesson(@RequestBody LessonDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.create(dto));
     }
-
+    
     @PutMapping("/lessons/{id}")
     public ResponseEntity<LessonDto> updateLesson(@PathVariable Long id, @RequestBody LessonDto dto) {
         dto.setId(id);

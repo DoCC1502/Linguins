@@ -1,31 +1,26 @@
 <template>
   <section class="quiz-page">
     <div class="quiz-container">
-      <!-- Loading State -->
       <div v-if="isLoading" class="loading-state">
         <div class="spinner"></div>
         <p>Lektion wird geladen...</p>
       </div>
 
-      <!-- Error State -->
       <div v-else-if="error" class="error-state">
         <h2>Fehler</h2>
         <p>{{ error }}</p>
         <button @click="goBack" class="btn-secondary">Zurück</button>
       </div>
 
-      <!-- Quiz Content -->
-      <template v-else-if="lessonContent">
-        <!-- Header mit großer Fortschrittsleiste -->
+      <template v-else-if="activeLesson">
         <header class="quiz-header">
           <div class="header-top">
-            <span class="lesson-category">Lektion {{ lessonContent.id }}</span>
+            <span class="lesson-category">Lektion {{ activeLesson.id }}</span>
             <span v-if="!isLoggedIn" class="guest-badge">Gast-Modus</span>
           </div>
-          <h1 class="lesson-title">{{ lessonContent.title }}</h1>
-          <p class="lesson-description">{{ lessonContent.description }}</p>
+          <h1 class="lesson-title">{{ activeLesson.title }}</h1>
+          <p class="lesson-description">{{ activeLesson.description }}</p>
 
-          <!-- Große Fortschrittsleiste -->
           <div class="progress-section">
             <div class="progress-header">
               <span class="progress-label">Fortschritt</span>
@@ -33,13 +28,13 @@
             </div>
             <div class="progress-bar-large">
               <div
-                class="progress-fill"
-                :style="{ width: localProgressPercentage + '%' }"
-                :class="{ completed: allTasksAnswered }"
+                  class="progress-fill"
+                  :style="{ width: localProgressPercentage + '%' }"
+                  :class="{ completed: allTasksAnswered }"
               ></div>
             </div>
             <div class="progress-stats">
-              <span>{{ correctAnswers }} von {{ lessonContent.tasks.length }} richtig</span>
+              <span>{{ correctAnswers }} von {{ activeLesson.tasks.length }} richtig</span>
               <span v-if="isLoggedIn && lastSynced" class="sync-status">
                 {{ syncError ? '⚠️ Sync-Fehler' : '✓ Gespeichert' }}
               </span>
@@ -47,16 +42,15 @@
           </div>
         </header>
 
-        <!-- Frage-Box -->
         <div class="question-card">
           <div class="question-header">
-            <span class="question-number">Frage {{ currentQuestionIndex + 1 }} / {{ lessonContent.tasks.length }}</span>
+            <span class="question-number">Frage {{ currentQuestionIndex + 1 }} / {{ activeLesson.tasks.length }}</span>
             <div class="question-dots">
               <span
-                v-for="(task, idx) in lessonContent.tasks"
-                :key="idx"
-                class="dot"
-                :class="{
+                  v-for="(task, idx) in activeLesson.tasks"
+                  :key="idx"
+                  class="dot"
+                  :class="{
                   completed: task.r === true,
                   wrong: task.r === false,
                   current: idx === currentQuestionIndex
@@ -67,25 +61,24 @@
 
           <div class="question-content">
             <h2 class="question-text">{{ currentTask?.q }}</h2>
-            <p class="question-hint">Gib den entsprechenden Linux-Befehl oder Wert ein</p>
+            <p class="question-hint">Gib die richtige Antwort ein</p>
           </div>
 
-          <!-- Input-Bereich -->
           <div class="answer-section">
             <div class="input-wrapper" :class="{ 'has-feedback': hasFeedback }">
               <input
-                ref="answerInput"
-                :value="currentTask?.a"
-                @input="updateAnswer(($event.target as HTMLInputElement).value)"
-                type="text"
-                class="answer-input"
-                :class="{
+                  ref="answerInput"
+                  :value="currentTask?.a"
+                  @input="updateAnswer(($event.target as HTMLInputElement).value)"
+                  type="text"
+                  class="answer-input"
+                  :class="{
                   correct: currentTask?.r === true,
                   wrong: currentTask?.r === false
                 }"
-                placeholder="Deine Antwort..."
-                :disabled="currentTask?.r === true"
-                @keyup.enter="checkAnswer"
+                  placeholder="Deine Antwort..."
+                  :disabled="currentTask?.r === true"
+                  @keyup.enter="checkAnswer"
               />
               <div v-if="hasFeedback" class="feedback-icon">
                 <span v-if="currentTask?.r === true">✓</span>
@@ -94,27 +87,26 @@
             </div>
 
             <button
-              v-if="currentTask?.r !== true"
-              @click="checkAnswer"
-              class="btn-primary"
-              :disabled="!canSubmit"
+                v-if="currentTask?.r !== true"
+                @click="checkAnswer"
+                class="btn-primary"
+                :disabled="!canSubmit"
             >
               Antwort prüfen
             </button>
             <button
-              v-else-if="!allTasksAnswered"
-              @click="nextQuestion"
-              class="btn-primary"
+                v-else-if="!allTasksAnswered"
+                @click="nextQuestion"
+                class="btn-primary"
             >
               Nächste Frage →
             </button>
           </div>
 
-          <!-- Sofort-Feedback -->
           <div
-            v-if="hasFeedback"
-            class="feedback-message"
-            :class="{ correct: currentTask?.r === true, wrong: currentTask?.r === false }"
+              v-if="hasFeedback"
+              class="feedback-message"
+              :class="{ correct: currentTask?.r === true, wrong: currentTask?.r === false }"
           >
             <div class="feedback-content">
               <span class="feedback-icon-large">
@@ -122,63 +114,53 @@
               </span>
               <div class="feedback-text">
                 <p v-if="currentTask?.r === true" class="feedback-title">Richtig!</p>
-                <p v-else class="feedback-title">Falsch</p>
+                <p v-else class="feedback-title">Nicht ganz...</p>
                 <p v-if="currentTask?.r === false" class="feedback-hint">
-                  Die richtige Antwort wäre: <strong>{{ currentTask?.c }}</strong>
+                  Die Lösung ist: <strong>{{ currentTask?.c }}</strong>
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Navigation zwischen Fragen -->
-        <div v-if="lessonContent.tasks.length > 1" class="question-navigation">
+        <div v-if="activeLesson.tasks.length > 1" class="question-navigation">
           <button
-            v-for="(task, idx) in lessonContent.tasks"
-            :key="idx"
-            class="nav-dot"
-            :class="{
+              v-for="(task, idx) in activeLesson.tasks"
+              :key="idx"
+              class="nav-dot"
+              :class="{
               completed: task.r === true,
               wrong: task.r === false,
               current: idx === currentQuestionIndex
             }"
-            @click="goToQuestion(idx)"
+              @click="goToQuestion(idx)"
           >
             {{ idx + 1 }}
           </button>
         </div>
 
-        <!-- Abschluss-Bereich -->
         <div v-if="allTasksAnswered && !lessonCompleted" class="completion-section">
           <div class="completion-card">
-            <h3>🎉 Alle Fragen beantwortet!</h3>
-            <p>Du hast {{ correctAnswers }} von {{ lessonContent.tasks.length }} Fragen richtig beantwortet.</p>
+            <h3>🎉 Geschafft!</h3>
+            <p>Du hast alle Fragen bearbeitet. Bereit für die Auswertung?</p>
             <div class="completion-actions">
               <button @click="finishLesson" class="btn-success" :disabled="isSyncing">
-                {{ isSyncing ? 'Wird gespeichert...' : 'Lektion abschließen' }}
+                {{ isSyncing ? 'Daten werden übertragen...' : 'Lektion abschließen' }}
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Erfolgsmeldung nach Abschluss -->
         <div v-if="lessonCompleted" class="success-banner">
           <div class="success-content">
             <span class="success-icon">🏆</span>
             <div class="success-text">
-              <h3>Lektion abgeschlossen!</h3>
-              <p>Score: {{ finalScore }}% ({{ passed ? 'Bestanden' : 'Nicht bestanden' }})</p>
+              <h3>Ergebnis</h3>
+              <p>Score: {{ finalScore }}% - {{ passed ? 'Hervorragend!' : 'Versuch es noch einmal.' }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Sync Error -->
-        <div v-if="syncError" class="sync-error">
-          <span>⚠️ Fortschritt konnte nicht synchronisiert werden</span>
-          <button @click="retrySync" class="btn-retry">Erneut versuchen</button>
-        </div>
-
-        <!-- Footer Actions -->
         <div class="quiz-footer">
           <button @click="goBack" class="btn-secondary">← Zurück zur Übersicht</button>
         </div>
@@ -188,19 +170,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { lessonService } from '@/services/lessonService';
-import type { LessonContent, Task, UserDto } from '@/types/types';
+import {ref, computed, onMounted, watch, nextTick} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
+import {lessonService} from '@/services/lessonService';
+import type {
+  LessonDto,
+  LessonContentDto,
+  QuizTask,
+  ActiveLesson,
+  ActiveTask,
+  UserDto
+} from '@/types/types';
 
 const route = useRoute();
 const router = useRouter();
 const answerInput = ref<HTMLInputElement | null>(null);
 
-// State
+// State Management
 const isLoading = ref(true);
 const error = ref<string | null>(null);
-const lessonContent = ref<LessonContent | null>(null);
+const activeLesson = ref<ActiveLesson | null>(null); // Nutzt jetzt den neuen modularen Typ
 const currentQuestionIndex = ref(0);
 const isLoggedIn = ref(false);
 const currentUser = ref<UserDto | null>(null);
@@ -211,47 +200,79 @@ const lessonCompleted = ref(false);
 const finalScore = ref<number | null>(null);
 const passed = ref(false);
 
-// Computed
-const currentTask = computed<Task | null>(() => {
-  if (!lessonContent.value) return null;
-  return lessonContent.value.tasks[currentQuestionIndex.value] || null;
+// Computed Properties
+const currentTask = computed<ActiveTask | null>(() => {
+  if (!activeLesson.value) return null;
+  return activeLesson.value.tasks[currentQuestionIndex.value] || null;
 });
 
 const correctAnswers = computed(() => {
-  if (!lessonContent.value) return 0;
-  return lessonContent.value.tasks.filter(t => t.r === true).length;
+  if (!activeLesson.value) return 0;
+  return activeLesson.value.tasks.filter(t => t.r === true).length;
 });
 
 const localProgressPercentage = computed(() => {
-  if (!lessonContent.value || lessonContent.value.tasks.length === 0) return 0;
-  return Math.round((correctAnswers.value / lessonContent.value.tasks.length) * 100);
+  if (!activeLesson.value || activeLesson.value.tasks.length === 0) return 0;
+  return Math.round((correctAnswers.value / activeLesson.value.tasks.length) * 100);
 });
 
 const allTasksAnswered = computed(() => {
-  if (!lessonContent.value) return false;
-  return lessonContent.value.tasks.every(t => t.r !== null);
+  if (!activeLesson.value) return false;
+  return activeLesson.value.tasks.every(t => t.r !== null);
 });
 
 const hasFeedback = computed(() => currentTask.value?.r !== null);
 
 const canSubmit = computed(() => {
   const task = currentTask.value;
-  if (!task) return false;
-  return task.a.trim().length > 0;
+  return !!task && task.a.trim().length > 0;
 });
 
-// Watch für DB-Sync bei jeder richtigen Antwort
-let syncTimeout: ReturnType<typeof setTimeout> | null = null;
-
+// Fortschritts-Sync bei jeder richtigen Antwort
 watch(correctAnswers, async (newVal, oldVal) => {
-  if (!lessonContent.value || !isLoggedIn.value || !currentUser.value?.id) return;
+  if (!activeLesson.value || !isLoggedIn.value || !currentUser.value?.id) return;
   if (newVal > oldVal) {
-    // Sofort sync bei korrekter Antwort
     await syncProgress();
   }
 });
 
-// Auth Status prüfen
+// Modulares Laden der Lektion
+async function loadLesson() {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const lessonId = Number(route.params.id);
+    if (isNaN(lessonId)) throw new Error("Ungültige Lektions-ID");
+
+    // Parallel Daten vom Backend abrufen
+    const [lessonData, contentDto]: [LessonDto, LessonContentDto] = await Promise.all([
+      lessonService.getLessonById(lessonId),
+      lessonService.getLessonContent(lessonId)
+    ]);
+
+    // JSON-Parsing der Aufgaben
+    const rawTasks: QuizTask[] = JSON.parse(contentDto.content);
+
+    // Transformation in den Active-State für die Engine
+    activeLesson.value = {
+      id: lessonData.id,
+      title: lessonData.title,
+      description: lessonData.description,
+      tasks: rawTasks.map(t => ({
+        ...t,
+        a: '',    // Initialisierung der User-Antwort
+        r: null   // Initialisierung des Status
+      }))
+    };
+  } catch (err) {
+    error.value = "Die Lektionsdaten konnten nicht modular geladen werden.";
+    console.error("Load Error:", err);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 function checkAuthStatus() {
   const storedUser = localStorage.getItem('user');
   if (storedUser) {
@@ -261,63 +282,15 @@ function checkAuthStatus() {
     } catch {
       isLoggedIn.value = false;
     }
-  } else {
-    isLoggedIn.value = false;
   }
 }
 
-// Lektion laden
-async function loadLesson() {
-  isLoading.value = true;
-  error.value = null;
-
-  try {
-    const lessonIdParam = route.params.id || route.params.lessonId;
-    const lessonId = typeof lessonIdParam === 'string'
-      ? parseInt(lessonIdParam, 10)
-      : Array.isArray(lessonIdParam) && lessonIdParam.length > 0 && lessonIdParam[0]
-        ? parseInt(lessonIdParam[0], 10)
-        : null;
-
-    if (!lessonId || isNaN(lessonId)) {
-      error.value = 'Ungültige Lektions-ID';
-      return;
-    }
-
-    const content = lessonService.getStaticContent(lessonId);
-
-    if (!content) {
-      error.value = `Lektion ${lessonId} wurde nicht gefunden`;
-      return;
-    }
-
-    lessonContent.value = content;
-
-    if (isLoggedIn.value && currentUser.value?.id) {
-      await loadExistingProgress(currentUser.value.id, lessonId);
-    }
-
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Unbekannter Fehler';
-    console.error('Fehler beim Laden der Lektion:', err);
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function loadExistingProgress(userId: number, lessonId: number) {
-  // Optional: Vorhandenen Fortschritt laden
-  // Für jetzt starten wir bei 0
-}
-
-// Antwort aktualisieren
 function updateAnswer(value: string) {
   if (currentTask.value) {
     currentTask.value.a = value;
   }
 }
 
-// Antwort prüfen
 function checkAnswer() {
   if (!currentTask.value) return;
 
@@ -327,7 +300,6 @@ function checkAnswer() {
 
   task.r = userAnswer === correctAnswer;
 
-  // Focus auf Input für bessere UX
   nextTick(() => {
     if (!task.r) {
       answerInput.value?.focus();
@@ -336,76 +308,58 @@ function checkAnswer() {
   });
 }
 
-// Nächste Frage
 function nextQuestion() {
-  if (!lessonContent.value) return;
-
+  if (!activeLesson.value) return;
   const nextIndex = currentQuestionIndex.value + 1;
-  if (nextIndex < lessonContent.value.tasks.length) {
+  if (nextIndex < activeLesson.value.tasks.length) {
     currentQuestionIndex.value = nextIndex;
-    // Focus auf Input für nächste Frage
-    nextTick(() => {
-      answerInput.value?.focus();
-    });
+    nextTick(() => answerInput.value?.focus());
   }
 }
 
-// Zu spezifischer Frage springen
 function goToQuestion(index: number) {
-  if (!lessonContent.value || index < 0 || index >= lessonContent.value.tasks.length) return;
+  if (!activeLesson.value || index < 0 || index >= activeLesson.value.tasks.length) return;
   currentQuestionIndex.value = index;
-  nextTick(() => {
-    answerInput.value?.focus();
-  });
+  nextTick(() => answerInput.value?.focus());
 }
 
-// Fortschritt synchronisieren
 async function syncProgress() {
-  if (!isLoggedIn.value || !currentUser.value?.id || !lessonContent.value) {
-    return;
-  }
-
+  if (!isLoggedIn.value || !currentUser.value?.id || !activeLesson.value) return;
   syncError.value = false;
 
   try {
     const status = allTasksAnswered.value ? 'COMPLETED' : 'IN_PROGRESS';
     await lessonService.updateUserProgress(
-      currentUser.value.id,
-      lessonContent.value.id,
-      localProgressPercentage.value,
-      status
+        currentUser.value.id,
+        activeLesson.value.id,
+        localProgressPercentage.value,
+        status
     );
     lastSynced.value = true;
   } catch (err) {
-    console.error('Sync fehlgeschlagen:', err);
     syncError.value = true;
   }
 }
 
-// Lektion abschließen
 async function finishLesson() {
-  if (!lessonContent.value) return;
+  if (!activeLesson.value) return;
 
   const score = localProgressPercentage.value;
   finalScore.value = score;
   passed.value = score >= 60;
-
   lessonCompleted.value = true;
 
   if (isLoggedIn.value && currentUser.value?.id) {
     isSyncing.value = true;
-    syncError.value = false;
-
     try {
       await lessonService.completeLesson(
-        currentUser.value.id,
-        lessonContent.value.id,
-        correctAnswers.value,
-        lessonContent.value.tasks.length
+          currentUser.value.id,
+          activeLesson.value.id,
+          correctAnswers.value,
+          activeLesson.value.tasks.length
       );
       lastSynced.value = true;
     } catch (err) {
-      console.error('Abschluss-Sync fehlgeschlagen:', err);
       syncError.value = true;
     } finally {
       isSyncing.value = false;
@@ -413,24 +367,14 @@ async function finishLesson() {
   }
 }
 
-// Sync erneut versuchen
-async function retrySync() {
-  await syncProgress();
-}
-
-// Zurück navigieren
 function goBack() {
   router.push('/lessons');
 }
 
-// Lifecycle
 onMounted(async () => {
   checkAuthStatus();
   await loadLesson();
-  // Focus auf Input beim Start
-  nextTick(() => {
-    answerInput.value?.focus();
-  });
+  nextTick(() => answerInput.value?.focus());
 });
 </script>
 
@@ -979,7 +923,9 @@ onMounted(async () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error State */

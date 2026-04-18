@@ -1,64 +1,38 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { lessonService } from '../services/lessonService';
-import type { LessonDto, UserDto } from '../types/types';
+import {ref, onMounted, onUnmounted} from 'vue';
+import {useRouter} from 'vue-router';
+import {lessonService} from '../services/lessonService';
+import type {LessonDto, UserDto} from '../types/types';
 
-/**
- * LOGIK BEREICH
- */
 const router = useRouter();
 const lessons = ref<LessonDto[]>([]);
 const isLoading = ref(true);
-const showDropdown = ref(false);
-const dropdownRef = ref<HTMLElement | null>(null);
 
-// Simulierter Admin-Status (In einer echten App aus Pinia/Auth-Store)
+// Admin-Status (In einer echten App via Auth-Store)
 const currentUser = ref<UserDto | null>({
   username: 'Admin',
-  email : 'admin@linguins',
+  email: 'admin@linguins',
   role: 'ADMIN'
 });
 
-// Dropdown schließen, wenn man außerhalb klickt (Unternehmen-Standard UX)
-const handleClickOutside = (event: MouseEvent) => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
-    showDropdown.value = false;
-  }
-};
-
 onMounted(async () => {
-  window.addEventListener('click', handleClickOutside);
   try {
-    // Daten vom Backend laden
     const data = await lessonService.getAllLessons();
     lessons.value = data;
   } catch (error) {
     console.error("Fehler beim Laden der Lektionen:", error);
   } finally {
-    // Kleiner Delay für geschmeidigeres UI-Feeling
     setTimeout(() => {
       isLoading.value = false;
     }, 400);
   }
 });
 
-onUnmounted(() => {
-  window.removeEventListener('click', handleClickOutside);
-});
-
-const toggleDropdown = (e: Event) => {
-  e.stopPropagation();
-  showDropdown.value = !showDropdown.value;
-};
-
-// Navigation zu den spezifischen Lektions-Files (Templates)
-async function selectTemplate(routePath: string) {
-  showDropdown.value = false;
-  router.push(`/lessons/${routePath}`);
+// Leitet zur neuen Creator-Seite weiter
+function goToCreateLesson() {
+  router.push('/admin/create-lesson');
 }
 
-// Navigation zur Lektion (mit ID für Progress Sync)
 function navigateToLesson(lessonId: number | undefined) {
   if (lessonId === undefined) return;
   router.push(`/lessons/${lessonId}`);
@@ -74,31 +48,17 @@ function navigateToLesson(lessonId: number | undefined) {
           <p class="subtitle">Meistere die Linux-Kommandozeile interaktiv.</p>
         </div>
 
-        <div v-if="currentUser?.role === 'ADMIN'" class="admin-zone" ref="dropdownRef">
-          <button @click="toggleDropdown" class="action-button primary">
+        <div v-if="currentUser?.role === 'ADMIN'" class="admin-zone">
+          <button @click="goToCreateLesson" class="action-button primary">
             <span class="icon">＋</span>
-            Template hinzufügen
+            Neue Lektion
           </button>
-
-          <transition name="slide-fade">
-            <div v-if="showDropdown" class="glass-dropdown">
-              <div class="dropdown-header">Lektions-Vorlagen</div>
-              <div class="dropdown-grid">
-                <button @click="selectTemplate('linux-fundamentals')">Fundamentals</button>
-                <button @click="selectTemplate('essential-commands')">Commands</button>
-                <button @click="selectTemplate('file-permissions')">Permissions</button>
-                <button @click="selectTemplate('process-management')">Processes</button>
-                <button @click="selectTemplate('network-commands')">Network</button>
-                <button @click="selectTemplate('shell-scripting')">Scripting</button>
-              </div>
-            </div>
-          </transition>
         </div>
       </div>
     </header>
 
     <div class="container">
-      <hr class="separator" />
+      <hr class="separator"/>
 
       <div v-if="isLoading" class="lessons-grid">
         <div v-for="i in 6" :key="i" class="skeleton-card"></div>
@@ -114,15 +74,15 @@ function navigateToLesson(lessonId: number | undefined) {
           <div class="card-inner">
             <div class="card-badge">Level {{ lesson.difficulty }}</div>
             <h3>{{ lesson.title }}</h3>
-            <p>Interaktive Übung zur Vertiefung deiner Linux-Kenntnisse im Terminal.</p>
+            <p>{{ lesson.description }}</p>
 
             <div class="card-footer">
               <div class="progress-info">
-                <span>Dein Fortschritt</span>
-                <span>0%</span>
+                <span>Status</span>
+                <span>Verfügbar</span>
               </div>
               <div class="progress-track">
-                <div class="progress-fill" style="width: 0%"></div>
+                <div class="progress-fill" style="width: 100%; opacity: 0.3"></div>
               </div>
             </div>
           </div>
@@ -174,18 +134,27 @@ function navigateToLesson(lessonId: number | undefined) {
   margin: 0;
 }
 
-.accent { color: var(--primary); }
-.subtitle { color: var(--text-muted); margin-top: 0.5rem; font-size: 1.1rem; }
+.accent {
+  color: var(--primary);
+}
+
+.subtitle {
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+}
 
 .separator {
   border: 0;
   height: 1px;
-  background: linear-gradient(to right, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   margin: 2rem 0 3rem 0;
 }
 
 /* ADMIN BUTTON & GLASS DROPDOWN */
-.admin-zone { position: relative; }
+.admin-zone {
+  position: relative;
+}
 
 .action-button.primary {
   background: var(--primary);
@@ -217,7 +186,7 @@ function navigateToLesson(lessonId: number | undefined) {
   padding: 1.5rem;
   width: 340px;
   z-index: 1000;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
 }
 
 .dropdown-header {
@@ -236,8 +205,8 @@ function navigateToLesson(lessonId: number | undefined) {
 }
 
 .dropdown-grid button {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   color: white;
   padding: 0.7rem;
   border-radius: 8px;
@@ -262,12 +231,12 @@ function navigateToLesson(lessonId: number | undefined) {
 }
 
 .modern-card {
-  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
   border-radius: 20px;
   padding: 1px;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .card-inner {
@@ -282,7 +251,7 @@ function navigateToLesson(lessonId: number | undefined) {
 .modern-card:hover {
   transform: translateY(-12px);
   border-color: var(--primary);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 .card-badge {
@@ -296,10 +265,23 @@ function navigateToLesson(lessonId: number | undefined) {
   margin-bottom: 1.5rem;
 }
 
-h3 { font-size: 1.6rem; margin: 0 0 0.8rem 0; font-weight: 700; }
-p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin: 0; }
+h3 {
+  font-size: 1.6rem;
+  margin: 0 0 0.8rem 0;
+  font-weight: 700;
+}
 
-.card-footer { margin-top: auto; padding-top: 2.5rem; }
+p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.card-footer {
+  margin-top: auto;
+  padding-top: 2.5rem;
+}
 
 .progress-info {
   display: flex;
@@ -332,14 +314,26 @@ p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin: 0; }
 }
 
 @keyframes pulse {
-  0% { opacity: 0.5; }
-  50% { opacity: 0.2; }
-  100% { opacity: 0.5; }
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
 
 /* TRANSITIONS */
-.slide-fade-enter-active { transition: all 0.3s ease-out; }
-.slide-fade-leave-active { transition: all 0.2s ease-in; }
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s ease-in;
+}
+
 .slide-fade-enter-from, .slide-fade-leave-to {
   opacity: 0;
   transform: translateY(-15px);
